@@ -1,0 +1,144 @@
+/* =========================
+   Container (PWA overlay)
+========================= */
+.cam-container {
+  padding: 6px;
+  width: 100%;
+}
+
+/* Wrapper */
+.cam-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+/* =========================
+   Camera Box (SMALL)
+========================= */
+.cam-video-box {
+  width: 100%;
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Video */
+.cam-video,
+video {
+  width: 100%;
+  height: 140px;          /* 🔹 small camera */
+  object-fit: cover;
+  display: block;
+  background: black;
+  border-radius: 6px;
+}
+
+/* Overlay text */
+.cam-overlay {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+/* =========================
+   Controls (Compact)
+========================= */
+.cam-controls {
+  width: 100%;
+}
+
+/* Buttons row */
+.cam-btn-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* Buttons */
+.cam-btn {
+  flex: 1;
+  padding: 6px 8px;      /* 🔹 smaller buttons */
+  font-size: 12px;
+  border: none;
+  border-radius: 6px;
+  background: #0066ff;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.cam-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cam-btn:hover:not(:disabled) {
+  background: #0051cc;
+}
+
+/* Status text */
+.cam-status {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* =========================
+   Captured Preview
+========================= */
+.cam-capture-list {
+  max-height: 120px;   /* 🔹 limit height */
+  overflow-y: auto;
+}
+
+.capture-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.capture-img {
+  width: 90px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Remove button */
+.remove-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  background: #ff4444;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.remove-btn:hover {
+  background: #cc0000;
+}
+
+/* =========================
+   Mobile PWA tweaks
+========================= */
+@media (max-width: 480px) {
+  .cam-video,
+  video {
+    height: 120px;
+  }
+
+  .cam-btn {
+    font-size: 11px;
+    padding: 6px;
+  }
+}
