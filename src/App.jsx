@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import CameraCapture from "./CameraCapture";
 import "./App.css";
-import "./camera.css"; 
+import "./camera.css";
 
 /*
   App:
@@ -30,6 +30,27 @@ export default function App() {
   const [error, setError] = useState(null);
   const [capturedUrl, setCapturedUrl] = useState(null);
   const watchIdRef = useRef(null);
+
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    function goOnline() {
+      setIsOnline(true);
+    }
+    function goOffline() {
+      setIsOnline(false);
+    }
+
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
+
+
 
   useEffect(() => {
     if (!("geolocation" in navigator)) {
@@ -108,54 +129,62 @@ export default function App() {
   });
 
   return (
-    <div style={{ height: "100vh", width: "100vw", position: "relative" }}>
-      {/* Camera controls overlay */}
-      <div style={{ position: "absolute", zIndex: 1200, right: 12, top: 12, background: "rgba(255,255,255,0.94)", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.12)" }}>
-        <CameraCapture onImage={handleImage} />
-        <div style={{ padding: 8, display: "flex", gap: 8 }}>
-          <button onClick={uploadCaptured} disabled={!capturedUrl}>
-            Upload Captured
-          </button>
-          <button
-            onClick={() => {
-              if (capturedUrl) {
-                URL.revokeObjectURL(capturedUrl);
-                setCapturedUrl(null);
-              }
-            }}
-            disabled={!capturedUrl}
-          >
-            Clear
-          </button>
+    <>
+      {isOnline && (
+        <div style={{ position: "fixed", top: 0, width: "100%", background: "crimson", color: "white", padding: "8px", textAlign: "center" }}>
+          You are offline
         </div>
-        {capturedUrl && (
-          <div style={{ padding: 8 }}>
-            <div style={{ fontSize: 12, marginBottom: 6 }}>Last capture preview:</div>
-            <img src={capturedUrl} alt="capture preview" style={{ maxWidth: 220, borderRadius: 6, display: "block" }} />
-          </div>
-        )}
-        {error && <div style={{ color: "crimson", padding: 8 }}>{error}</div>}
-      </div>
+      )}
 
-      {/* Map */}
-      <div className="map-container" style={{ height: "100%", width: "100%" }}>
-        <MapContainer
-          center={position ? [position.lat, position.lng] : [12.9716, 77.5946]}
-          zoom={13}
-          scrollWheelZoom={true}
-          style={{ height: "100%", width: "100%" }}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap" />
-          {position && (
-            <>
-              <LocateToPosition position={position} />
-              <Marker position={[position.lat, position.lng]} icon={defaultIcon}>
-                <Popup>Current location</Popup>
-              </Marker>
-            </>
+      <div style={{ height: "100vh", width: "100vw", position: "relative" }}>
+        {/* Camera controls overlay */}
+        <div style={{ position: "absolute", zIndex: 1200, right: 12, top: 12, background: "rgba(255,255,255,0.94)", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.12)" }}>
+          <CameraCapture onImage={handleImage} isonline={isonline} />
+          <div style={{ padding: 8, display: "flex", gap: 8 }}>
+            <button onClick={uploadCaptured} disabled={!capturedUrl}>
+              Upload Captured
+            </button>
+            <button
+              onClick={() => {
+                if (capturedUrl) {
+                  URL.revokeObjectURL(capturedUrl);
+                  setCapturedUrl(null);
+                }
+              }}
+              disabled={!capturedUrl}
+            >
+              Clear
+            </button>
+          </div>
+          {capturedUrl && (
+            <div style={{ padding: 8 }}>
+              <div style={{ fontSize: 12, marginBottom: 6 }}>Last capture preview:</div>
+              <img src={capturedUrl} alt="capture preview" style={{ maxWidth: 220, borderRadius: 6, display: "block" }} />
+            </div>
           )}
-        </MapContainer>
+          {error && <div style={{ color: "crimson", padding: 8 }}>{error}</div>}
+        </div>
+
+        {/* Map */}
+        <div className="map-container" style={{ height: "100%", width: "100%" }}>
+          <MapContainer
+            center={position ? [position.lat, position.lng] : [12.9716, 77.5946]}
+            zoom={13}
+            scrollWheelZoom={true}
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap" />
+            {position && (
+              <>
+                <LocateToPosition position={position} />
+                <Marker position={[position.lat, position.lng]} icon={defaultIcon}>
+                  <Popup>Current location</Popup>
+                </Marker>
+              </>
+            )}
+          </MapContainer>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -8,11 +8,11 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "My React PWA",
-        short_name: "PWA",
+        name: "PathoDetect",
+        short_name: "PathoDetect",
         start_url: "/",
         display: "standalone",
-        theme_color: "#000000",
+        theme_color: "#1c1c1cff",
         background_color: "#ffffff",
         icons: [
           {
@@ -26,7 +26,8 @@ export default defineConfig({
             type: "image/png",
           },
         ],
-      },
+      }
+
     }),
   ],
 

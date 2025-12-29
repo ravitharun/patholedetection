@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./camera.css"; 
 
-export default function CameraCapture({ uploadUrl = "/upload" }) {
+export default function CameraCapture({ uploadUrl = "/upload",isonline }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -48,6 +48,8 @@ export default function CameraCapture({ uploadUrl = "/upload" }) {
     setIsRunning(false);
   }
 
+
+
   async function capturePhoto() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -83,9 +85,14 @@ export default function CameraCapture({ uploadUrl = "/upload" }) {
     { name: "Stop", action: stopCamera, disable: !isRunning },
     { name: "Flip", action: toggleFacing, disable: false }
   ];
-
+console.log(isOnline,'isOnline from camera')
   return (
     <div className="cam-container">
+         {isOnline && (
+        <div style={{ position: "fixed", top: 0, width: "100%", background: "crimson", color: "white", padding: "8px", textAlign: "center" }}>
+          You are offline
+        </div>
+      )}
       <div className="cam-wrapper">
 
         {/* Left Side – Camera */}
