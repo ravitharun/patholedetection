@@ -16,7 +16,7 @@ function LocateToPosition({ position }) {
     }
     console.log("first")
     console.log("first")
-    console.log("first")
+    console.log("first")  
   }, [map, position]);
   return null;
 }
