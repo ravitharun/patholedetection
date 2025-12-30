@@ -6,14 +6,7 @@ import CameraCapture from "./CameraCapture";
 import "./App.css";
 import "./camera.css";
 
-/*
-  App:
-  - shows a Leaflet map (OpenStreetMap tiles)
-  - centers on live device location (via navigator.geolocation)
-  - shows a marker for current location
-  - embeds CameraCapture (start/stop + capture)
-  - shows captured image preview and an upload button (upload is a stub you can replace)
-*/
+
 
 function LocateToPosition({ position }) {
   const map = useMap();
@@ -21,6 +14,7 @@ function LocateToPosition({ position }) {
     if (position) {
       map.flyTo([position.lat, position.lng], 16, { duration: 0.7 });
     }
+    console.log("first")
   }, [map, position]);
   return null;
 }
