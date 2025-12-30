@@ -15,6 +15,7 @@ function LocateToPosition({ position }) {
       map.flyTo([position.lat, position.lng], 16, { duration: 0.7 });
     }
     console.log("first")
+    console.log("first")
   }, [map, position]);
   return null;
 }
