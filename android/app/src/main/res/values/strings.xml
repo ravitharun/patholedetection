@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TSA-Traffic System Administration</string>
+    <string name="title_activity_main">TSA-Traffic System Administration</string>
+    <string name="package_name">com.sudh.tsa</string>
+    <string name="custom_url_scheme">com.sudh.tsa</string>
+</resources>
