@@ -20,10 +20,10 @@ jobs:
                 node-version: 18
             - name: install the ui
               run: npm install
-              working-directory: patholedetection
+            #   working-directory: patholedetection
 
             - name: run build command
               run: npm run build
-              working-directory: patholedetection
+            #   working-directory: patholedetection
             - name: check the status
               run: echo "all steps are completed $ProjectName"
