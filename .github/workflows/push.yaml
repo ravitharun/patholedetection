@@ -13,7 +13,7 @@ jobs:
             - name: Runner checking
               run: echo "hi i am the runner"
             - name: pull the code from github
-              run: actions/checkout@v4
+              uses: actions/checkout@v4
             - name: node version
               uses: actions/setup-node@v4
               with: 
