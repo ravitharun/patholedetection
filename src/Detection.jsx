@@ -7,6 +7,7 @@ export default function Detection() {
   const [model, setModel] = useState("pothole");
   const [imageUrl, setImageUrl] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleDetect = async () => {
     if (!file) {
@@ -14,34 +15,53 @@ export default function Detection() {
       return;
     }
 
+    setLoading(true);
+    setImageUrl(null);
+    setVideoUrl(null);
+
     const formData = new FormData();
 
-    if (file.type.startsWith("image")) {
-      formData.append("image", file);
+    try {
+      // 🖼 IMAGE
+      if (file.type.startsWith("image")) {
+        formData.append("image", file);
 
-      const res = await fetch(
-        `${BACKEND_URL}/detect?model=${model}`,
-        { method: "POST", body: formData }
-      );
+        const res = await fetch(
+          `${BACKEND_URL}/detect?model=${model}`,
+          { method: "POST", body: formData }
+        );
 
-      const data = await res.json();
-      console.log("Detections:", data);
+        if (!res.ok) throw new Error("Image detection failed");
 
-      setImageUrl(URL.createObjectURL(file));
-      setVideoUrl(null);
-    }
+        const data = await res.json();
+        console.log("Image detections:", data);
 
-    else if (file.type.startsWith("video")) {
-      formData.append("video", file);
+        setImageUrl(URL.createObjectURL(file));
+      }
 
-      const res = await fetch(
-        `${BACKEND_URL}/detect-video?model=${model}`,
-        { method: "POST", body: formData }
-      );
+      // 🎥 VIDEO
+      else if (file.type.startsWith("video")) {
+        formData.append("video", file);
 
-      const blob = await res.blob();
-      setVideoUrl(URL.createObjectURL(blob));
-      setImageUrl(null);
+        const res = await fetch(
+          `${BACKEND_URL}/detect-video?model=${model}`,
+          { method: "POST", body: formData }
+        );
+
+        if (!res.ok) throw new Error("Video detection failed");
+
+        const blob = await res.blob();
+        setVideoUrl(URL.createObjectURL(blob));
+      }
+
+      else {
+        alert("Unsupported file type");
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,14 +85,26 @@ export default function Detection() {
 
       <br /><br />
 
-      <button onClick={handleDetect}>Detect</button>
+      <button onClick={handleDetect} disabled={loading}>
+        {loading ? "Detecting..." : "Detect"}
+      </button>
 
       <br /><br />
 
-      {imageUrl && <img src={imageUrl} style={{ width: "100%" }} />}
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt="result"
+          style={{ width: "100%", borderRadius: 8 }}
+        />
+      )}
 
       {videoUrl && (
-        <video src={videoUrl} controls style={{ width: "100%" }} />
+        <video
+          src={videoUrl}
+          controls
+          style={{ width: "100%", borderRadius: 8 }}
+        />
       )}
     </div>
   );
