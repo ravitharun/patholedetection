@@ -5,9 +5,6 @@ import L from "leaflet";
 import CameraCapture from "./CameraCapture";
 import "./App.css";
 import "./camera.css";
-
-
-
 function LocateToPosition({ position }) {
   const map = useMap();
   useEffect(() => {
