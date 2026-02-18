@@ -1,0 +1,26 @@
+.livemap-root {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.livemap-header {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  padding: 10px 14px;
+  background: #0b74de;
+  color: white;
+  z-index: 1200;
+  display: flex;
+  justify-content: space-between;
+}
+
+.livemap-container {
+  height: 100%;
+}
+
+.leaflet-map {
+  height: 100%;
+  width: 100%;
+}
