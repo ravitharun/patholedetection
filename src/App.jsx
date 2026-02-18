@@ -8,6 +8,7 @@ import CameraCapture from "./CameraCapture";
 import "./App.css";
 import "./camera.css";
 
+/* 🔄 Fly map to current position */
 function LocateToPosition({ position }) {
   const map = useMap();
 
@@ -26,7 +27,7 @@ export default function App() {
   const [capturedUrl, setCapturedUrl] = useState(null);
   const watchIdRef = useRef(null);
 
-  // 🌐 Online / Offline state
+  /* 🌐 Online / Offline status */
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function App() {
     };
   }, []);
 
-  // 📍 Geolocation
+  /* 📍 Geolocation */
   useEffect(() => {
     if (!("geolocation" in navigator)) {
       setError("Geolocation not supported");
@@ -76,7 +77,7 @@ export default function App() {
     };
   }, []);
 
-  // 📸 Handle image from camera
+  /* 📸 Handle captured image */
   const handleImage = (blob) => {
     if (!blob) return;
 
@@ -88,18 +89,16 @@ export default function App() {
     setCapturedUrl(url);
   };
 
-  // ⬆️ Upload stub
+  /* ⬆️ Upload placeholder */
   const uploadCaptured = async () => {
-    if (!capturedUrl) return alert("No image captured");
-
-    try {
-      alert("Image ready for upload (backend hookup pending)");
-    } catch (e) {
-      alert("Upload failed: " + e.message);
+    if (!capturedUrl) {
+      alert("No image captured");
+      return;
     }
+    alert("Image ready for upload (backend integration pending)");
   };
 
-  // 📍 Leaflet marker fix
+  /* 📍 Leaflet marker icon fix */
   const defaultIcon = L.icon({
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
     iconRetinaUrl:
@@ -112,7 +111,7 @@ export default function App() {
 
   return (
     <>
-      {/* 🔴 Offline banner */}
+      {/* 🔴 Offline Banner */}
       {!isOnline && (
         <div
           style={{
@@ -131,7 +130,7 @@ export default function App() {
       )}
 
       <div style={{ height: "100vh", width: "100vw", position: "relative" }}>
-        {/* 📸 Camera controls */}
+        {/* 📸 Camera Controls */}
         <div
           style={{
             position: "absolute",
