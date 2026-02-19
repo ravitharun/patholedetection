@@ -1,0 +1,67 @@
+/* Root wrapper */
+.livemap-root {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: #f2f2f2;
+  overflow: hidden;
+}
+
+/* Header bar */
+.livemap-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  z-index: 1000;
+
+  background: #0b74de;
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Map container */
+.livemap-container {
+  position: absolute;
+  top: 52px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Leaflet map full size */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #ddd;
+}
+
+/* Make markers & overlays crisp */
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+  image-rendering: auto;
+}
+
+/* Traffic overlay polish */
+.leaflet-overlay-pane path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Mobile tweaks */
+@media (max-width: 480px) {
+  .livemap-header {
+    font-size: 14px;
+    padding: 0 10px;
+  }
+}

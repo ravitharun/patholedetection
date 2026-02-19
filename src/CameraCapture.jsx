@@ -1,125 +1,143 @@
+// src/CameraCapture.jsx
 import React, { useRef, useState } from "react";
-import "./camera.css";
+import "./CameraCapture.css";
 
-export default function CameraCapture({ uploadUrl = "/upload", isOnline, onImage }) {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const streamRef = useRef(null);
+// export default function CameraCapture({
+//   onUploadSuccess,
+//   isOnline = true,
+//   uploadUrl = "/api/upload",
+// })
+const videoRef = useRef(null);
+const canvasRef = useRef(null);
+const streamRef = useRef(null);
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [captures, setCaptures] = useState([]);
-  const [error, setError] = useState(null);
-  const [facing, setFacing] = useState("environment");
+const [isRunning, setIsRunning] = useState(false);
+const [error, setError] = useState(null);
+const [facing, setFacing] = useState("environment");
+const [isUploading, setIsUploading] = useState(false);
 
-  async function startCamera() {
-    if (!isOnline) {
-      alert("You are offline");
-      return;
-    }
-
-    setError(null);
-    try {
-      const constraints = {
-        video: {
-          facingMode: { ideal: facing },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
-
-      videoRef.current.srcObject = stream;
-      videoRef.current.playsInline = true;
-      await videoRef.current.play();
-
-      setIsRunning(true);
-    } catch (e) {
-      setError("Camera permission denied or not supported");
-    }
+async function startCamera() {
+  if (!isOnline) {
+    alert("You are offline");
+    return;
   }
 
-  function stopCamera() {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setIsRunning(false);
+  setError(null);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+    });
+    streamRef.current = stream;
+    videoRef.current.srcObject = stream;
+    await videoRef.current.play();
+    setIsRunning(true);
+  } catch {
+    setError("Camera permission denied");
+  }
+}
+
+function stopCamera() {
+  if (streamRef.current) {
+    streamRef.current.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  }
+  setIsRunning(false);
+}
+
+async function capturePhoto() {
+  const video = videoRef.current;
+  const canvas = canvasRef.current;
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+}
+async function captureAndUpload() {
+  if (!videoRef.current) return;
+
+  const canvas = canvasRef.current;
+  canvas.width = videoRef.current.videoWidth;
+  canvas.height = videoRef.current.videoHeight;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(videoRef.current, 0, 0);
+
+  const blob = await new Promise((res) =>
+    canvas.toBlob(res, "image/jpeg", 0.85)
+  );
+
+  if (!isOnline) {
+    setError("Offline: cannot upload");
+    return;
   }
 
-  async function capturePhoto() {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
 
-    const ctx = canvas.getContext("2d");
+  const url = URL.createObjectURL(blob);
 
-    if (facing === "user") {
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-    } else {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    }
+  setCaptures((prev) => [{ blob, url, timestamp: Date.now() }, ...prev]);
 
-    const blob = await new Promise((res) =>
-      canvas.toBlob(res, "image/jpeg", 0.85)
-    );
+  // 🔥 SEND IMAGE TO PARENT (App.jsx)
+  if (onImage) onImage(blob);
+}
 
-    const url = URL.createObjectURL(blob);
-
-    setCaptures((prev) => [{ blob, url, timestamp: Date.now() }, ...prev]);
-
-    // 🔥 SEND IMAGE TO PARENT (App.jsx)
-    if (onImage) onImage(blob);
+function toggleFacing() {
+  setFacing((prev) => (prev === "environment" ? "user" : "environment"));
+  if (isRunning) {
+    stopCamera();
+    setTimeout(startCamera, 300);
   }
+}
 
-  function toggleFacing() {
-    setFacing((prev) => (prev === "environment" ? "user" : "environment"));
-    if (isRunning) {
-      stopCamera();
-      setTimeout(startCamera, 300);
-    }
-  }
+const eventButtons = [
+  { name: "Start", action: startCamera, disable: isRunning },
+  { name: "Capture", action: capturePhoto, disable: !isRunning },
+  { name: "Stop", action: stopCamera, disable: !isRunning },
+  { name: "Flip", action: toggleFacing, disable: false },
+];
+try {
+  setIsUploading(true);
+  const fd = new FormData();
+  fd.append("photo", blob);
 
-  const eventButtons = [
-    { name: "Start", action: startCamera, disable: isRunning },
-    { name: "Capture", action: capturePhoto, disable: !isRunning },
-    { name: "Stop", action: stopCamera, disable: !isRunning },
-    { name: "Flip", action: toggleFacing, disable: false },
-  ];
+  const res = await fetch(uploadUrl, {
+    method: "POST",
+    body: fd,
+  });
 
-  return (
-    <div className="cam-container">
-      {/* 🔴 Offline banner */}
-      {!isOnline && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            width: "100%",
-            background: "crimson",
-            color: "white",
-            padding: "8px",
-            textAlign: "center",
-            zIndex: 2000,
-          }}
+  if (!res.ok) throw new Error("Upload failed");
+
+  const json = await res.json();
+  onUploadSuccess?.(json);
+} catch (e) {
+  setError(e.message);
+} finally {
+  setIsUploading(false);
+}
+
+
+
+
+return (
+  <>
+    <div className="camera-root">
+      <video ref={videoRef} className="camera-video" />
+
+      <div className="camera-controls">
+        <button
+          className="camera-btn"
+          onClick={startCamera}
+          disabled={isRunning}
         >
-          You are offline
-        </div>
-      )}
+          Start
+        </button>
 
-      <div className="cam-wrapper">
-        {/* Camera */}
-        <div className="cam-video-box">
-          <video ref={videoRef} className="cam-video" />
-
-          {!isRunning && (
-            <div className="cam-overlay">Camera Stopped</div>
-          )}
-        </div>
+        <button
+          className="camera-btn primary"
+          onClick={captureAndUpload}
+          disabled={!isRunning || isUploading}
+        >
+          {isUploading ? "Uploading…" : "Capture"}
+        </button>
 
         {/* Controls */}
         <div className="cam-controls">
@@ -164,9 +182,21 @@ export default function CameraCapture({ uploadUrl = "/upload", isOnline, onImage
             ))}
           </div>
         </div>
-      </div>
+        <button
+          className="camera-btn"
+          onClick={stopCamera}
+          disabled={!isRunning}
+        >
+          Stop
+        </button>
+      </div >
 
-      <canvas ref={canvasRef} style={{ display: "none" }} />
-    </div>
-  );
-}
+      {error && <div className="camera-error">{error}</div>
+      }
+
+      <canvas ref={canvasRef} className="camera-canvas" />
+    </div >
+
+  </>
+
+);
