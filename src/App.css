@@ -1,9 +1,55 @@
-html,body,#root { height: 100%; margin:0; }
-.app-root { height: 100vh; display: flex; flex-direction: column; }
-.topbar { background:#0b74de; color:white; padding:8px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.topbar h2 { margin:0; font-size:1.05rem; }
-.controls { display:flex; align-items:center; gap:12px; }
-.controls input { margin-left:8px; width:80px; padding:4px; }
-.speed-display { font-size:1rem; }
-.overspeed-banner { background: #ff4444; color: white; padding:10px; text-align:center; font-weight:bold; }
-.map-area { flex:1; }
+/* src/App.css */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.app-root {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* OFFLINE BANNER */
+.offline-banner {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: crimson;
+  color: white;
+  text-align: center;
+  padding: 6px;
+  z-index: 2000;
+  font-weight: 600;
+}
+
+/* CAMERA PANEL */
+.camera-panel {
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  z-index: 1500;
+}
+
+/* MAP */
+.map-area {
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* POPUP IMAGE */
+.popup-image {
+  width: 120px;
+  margin-top: 6px;
+  border-radius: 6px;
+  display: block;
+}

@@ -3,9 +3,11 @@ on:
     push:
         branches:
             - main
+            - Tree
     pull_request:
       branches:
         - main
+        - Tree
 jobs:
     UI:
         runs-on: ubuntu-latest

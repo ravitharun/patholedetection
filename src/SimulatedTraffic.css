@@ -1,0 +1,5 @@
+/* src/SimulatedTraffic.css */
+.leaflet-overlay-pane path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
