@@ -7,16 +7,17 @@ import "./CameraCapture.css";
 //   isOnline = true,
 //   uploadUrl = "/api/upload",
 // })
-const videoRef = useRef(null);
-const canvasRef = useRef(null);
-const streamRef = useRef(null);
 
-const [isRunning, setIsRunning] = useState(false);
-const [error, setError] = useState(null);
-const [facing, setFacing] = useState("environment");
-const [isUploading, setIsUploading] = useState(false);
 
 async function startCamera() {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState(null);
+  const [facing, setFacing] = useState("environment");
+  const [isUploading, setIsUploading] = useState(false);
   if (!isOnline) {
     alert("You are offline");
     return;
