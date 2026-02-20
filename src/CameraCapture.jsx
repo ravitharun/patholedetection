@@ -113,10 +113,6 @@ try {
 } finally {
   setIsUploading(false);
 }
-
-
-
-
 return (
   <>
     <div className="camera-root">
