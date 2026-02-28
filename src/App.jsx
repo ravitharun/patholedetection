@@ -310,6 +310,8 @@ const App = () => {
         setPosition({
           lat: p.coords.latitude,
           lng: p.coords.longitude,
+          accuracy: p.coords.accuracy,
+
         }),
       (err) => setError(err.message),
       { enableHighAccuracy: true }
@@ -353,11 +355,12 @@ const App = () => {
   return (
     <>
       {/* ✅ ONLY ONE MAP */}
-      <HereMap
-        LAT={position?.lat}
-        LONG={position?.lng}
-        markers={captures}
-      />
+    <HereMap
+  LAT={position?.lat}
+  LONG={position?.lng}
+  accuracy={position?.accuracy}
+  markers={captures}
+/>
 
       {/* Status Banner */}
       {captures.length === 0 ? (
