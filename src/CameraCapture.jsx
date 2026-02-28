@@ -209,6 +209,7 @@ import React, { useRef, useState } from "react";
 import "./CameraCapture.css";
 
 export default function CameraCapture({ onUploadSuccess, isOnline = true, uploadUrl = "/api/upload", onImage }) {
+  console.log({ onUploadSuccess, isOnline: true, uploadUrl: "/api/upload", onImage }, '{ onUploadSuccess, isOnline = true, uploadUrl = "/api/upload", onImage }')
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -219,14 +220,14 @@ export default function CameraCapture({ onUploadSuccess, isOnline = true, upload
   const [facing, setFacing] = useState("environment");
   const [isUploading, setIsUploading] = useState(false);
   const [captures, setCaptures] = useState([]);
-
+  const [showbtn, setbtn] = useState(false)
   // ✅ START CAMERA
   async function startCamera() {
     if (!isOnline) {
       alert("You are offline");
       return;
     }
-
+    setbtn(true)
     setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -248,6 +249,7 @@ export default function CameraCapture({ onUploadSuccess, isOnline = true, upload
       streamRef.current = null;
     }
     setIsRunning(false);
+    setbtn(0)
   }
 
   // ✅ CAPTURE + UPLOAD
@@ -308,8 +310,8 @@ export default function CameraCapture({ onUploadSuccess, isOnline = true, upload
 
   const eventButtons = [
     { name: "Start", action: startCamera, disable: isRunning },
+    // { name: "Stop", action: stopCamera, disable: !isRunning },
     { name: "Capture", action: captureAndUpload, disable: !isRunning },
-    { name: "Stop", action: stopCamera, disable: !isRunning },
     { name: "Flip", action: toggleFacing, disable: false },
   ];
 
@@ -320,23 +322,64 @@ export default function CameraCapture({ onUploadSuccess, isOnline = true, upload
         <video ref={videoRef} className="camera-video" />
 
         <div className="camera-controls">
-          <button onClick={startCamera} disabled={isRunning}>Start</button>
+          {/* <button onClick={startCamera} disabled={isRunning}>Start</button> */}
 
-          <button onClick={captureAndUpload} disabled={!isRunning || isUploading}>
+          {/* <button onClick={captureAndUpload} disabled={!isRunning || isUploading}>
             {isUploading ? "Uploading…" : "Capture"}
-          </button>
+          </button> */}
 
           <div className="cam-btn-row">
             {eventButtons.map((btn, i) => (
-              <button key={i} onClick={btn.action} disabled={btn.disable}>
-                {btn.name}
-              </button>
+              <>
+                <button key={i} onClick={btn.action} disabled={btn.disable}>
+                  {btn.name}
+                </button>
+
+              </>
             ))}
+            {showbtn &&
+              <>
+                <button onClick={stopCamera}>Stop</button>
+              </>
+            }
           </div>
 
-          <p>Status: {isRunning ? "Running" : "Stopped"}</p>
-          <p>Error: {error ?? "None"}</p>
-
+          {/* <div style={{ display: "flex", gap: "12px" }}>
+            <p
+              style={{
+                color: isRunning ? "green" : "red",
+                backgroundColor: "#f5f5f5",
+                padding: "6px 10px",
+                borderRadius: "6px",
+                fontWeight: "600"
+              }}
+            >
+              Status: {isRunning ? "Running" : "Stopped"}
+            </p>
+          </div> */}
+          <div style={{ display: "flex", gap: "12px" }}>
+            <p
+              className={`status-badge ${isRunning ? "running" : "stopped"
+                }`}
+            >
+              Status: {isRunning ? "Camera Running" : "Camera Stopped"}
+            </p>
+          </div>
+          {error &&
+            <p
+              style={{
+                color: error ? "crimson" : "gray",
+                backgroundColor: "#f5f5f5",
+                padding: "6px 10px",
+                borderRadius: "6px",
+                fontWeight: "500",
+                marginTop: "6px",
+                display: "inline-block"
+              }}
+            >
+              Error: {error ?? "None"}
+            </p>}
+          <br />
           {captures.map((c, i) => (
             <img key={i} src={c.url} width="100" alt="" />
           ))}
