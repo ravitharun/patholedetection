@@ -1,3 +1,12 @@
+// src/CameraCapture.jsx
+import React, { useRef, useState } from "react";
+import "./CameraCapture.css";
+
+export default function CameraCapture({
+  onUploadSuccess,
+  isOnline = true,
+  uploadUrl = "/api/upload",
+}) {
 import React, { useRef, useState } from "react";
 import "./camera.css";
 
@@ -7,8 +16,8 @@ export default function CameraCapture({ uploadUrl = "/upload", isOnline, onImage
   const streamRef = useRef(null);
 
   const [isRunning, setIsRunning] = useState(false);
-  const [captures, setCaptures] = useState([]);
   const [error, setError] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [facing, setFacing] = useState("environment");
 
   async function startCamera() {
@@ -19,6 +28,15 @@ export default function CameraCapture({ uploadUrl = "/upload", isOnline, onImage
 
     setError(null);
     try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      streamRef.current = stream;
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+      setIsRunning(true);
+    } catch {
+      setError("Camera permission denied");
       const constraints = {
         video: {
           facingMode: { ideal: facing },
@@ -48,6 +66,12 @@ export default function CameraCapture({ uploadUrl = "/upload", isOnline, onImage
     setIsRunning(false);
   }
 
+  async function captureAndUpload() {
+    if (!videoRef.current) return;
+
+    const canvas = canvasRef.current;
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
   async function capturePhoto() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -56,14 +80,66 @@ export default function CameraCapture({ uploadUrl = "/upload", isOnline, onImage
     canvas.height = video.videoHeight;
 
     const ctx = canvas.getContext("2d");
+    ctx.drawImage(videoRef.current, 0, 0);
 
-    if (facing === "user") {
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-    } else {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise((res) =>
+      canvas.toBlob(res, "image/jpeg", 0.85)
+    );
+
+    if (!isOnline) {
+      setError("Offline: cannot upload");
+      return;
     }
 
+    try {
+      setIsUploading(true);
+      const fd = new FormData();
+      fd.append("photo", blob);
+
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        body: fd,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const json = await res.json();
+      onUploadSuccess?.(json);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  return (
+    <div className="camera-root">
+      <video ref={videoRef} className="camera-video" />
+
+      <div className="camera-controls">
+        <button
+          className="camera-btn"
+          onClick={startCamera}
+          disabled={isRunning}
+        >
+          Start
+        </button>
+
+        <button
+          className="camera-btn primary"
+          onClick={captureAndUpload}
+          disabled={!isRunning || isUploading}
+        >
+          {isUploading ? "Uploading…" : "Capture"}
+        </button>
+
+        <button
+          className="camera-btn"
+          onClick={stopCamera}
+          disabled={!isRunning}
+        >
+          Stop
+        </button>
     const blob = await new Promise((res) =>
       canvas.toBlob(res, "image/jpeg", 0.85)
     );
@@ -166,7 +242,9 @@ export default function CameraCapture({ uploadUrl = "/upload", isOnline, onImage
         </div>
       </div>
 
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      {error && <div className="camera-error">{error}</div>}
+
+      <canvas ref={canvasRef} className="camera-canvas" />
     </div>
   );
 }

@@ -4,9 +4,12 @@
 .cam-container {
   padding: 6px;
   width: 100%;
+  box-sizing: border-box;
 }
 
-/* Wrapper */
+/* =========================
+   Wrapper
+========================= */
 .cam-wrapper {
   display: flex;
   flex-direction: column;
@@ -29,10 +32,10 @@
 .cam-video,
 video {
   width: 100%;
-  height: 140px;          /* 🔹 small camera */
+  height: 140px;          /* small camera preview */
   object-fit: cover;
   display: block;
-  background: black;
+  background: #000;
   border-radius: 6px;
 }
 
@@ -46,6 +49,7 @@ video {
   color: #fff;
   border-radius: 6px;
   font-size: 11px;
+  pointer-events: none;
 }
 
 /* =========================
@@ -65,15 +69,15 @@ video {
 /* Buttons */
 .cam-btn {
   flex: 1;
-  padding: 6px 8px;      /* 🔹 smaller buttons */
+  padding: 6px 8px;
   font-size: 12px;
   border: none;
   border-radius: 6px;
   background: #0066ff;
-  color: #fff;
+  color: #ffffff;
   cursor: pointer;
   font-weight: 600;
-  transition: 0.2s;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .cam-btn:disabled {
@@ -85,20 +89,33 @@ video {
   background: #0051cc;
 }
 
+.cam-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
 /* Status text */
 .cam-status {
   font-size: 11px;
   margin-top: 4px;
+  color: #333;
 }
 
 /* =========================
    Captured Preview
 ========================= */
 .cam-capture-list {
-  max-height: 120px;   /* 🔹 limit height */
+  max-height: 120px;   /* limit height */
   overflow-y: auto;
 }
 
+/* Empty state */
+.cam-empty {
+  font-size: 11px;
+  color: #666;
+  padding: 6px 0;
+}
+
+/* Capture item */
 .capture-item {
   display: flex;
   align-items: center;
@@ -106,11 +123,13 @@ video {
   padding: 4px 0;
 }
 
+/* Captured image */
 .capture-img {
   width: 90px;
   height: 60px;
   object-fit: cover;
   border-radius: 6px;
+  background: #000;
 }
 
 /* Remove button */
@@ -119,9 +138,10 @@ video {
   font-size: 11px;
   background: #ff4444;
   border: none;
-  color: white;
+  color: #ffffff;
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .remove-btn:hover {
