@@ -10,7 +10,10 @@ export default function Detection() {
   const [loading, setLoading] = useState(false);
 
   const handleDetect = async () => {
-    if (!file || loading) return;
+    if (!file) {
+      alert("Select image or video");
+      return;
+    }
 
     setLoading(true);
     setImageUrl(null);
@@ -28,7 +31,11 @@ export default function Detection() {
           { method: "POST", body: formData }
         );
 
-        await res.json(); // just to wait
+        if (!res.ok) throw new Error("Image detection failed");
+
+        const data = await res.json();
+        console.log("Image detections:", data);
+
         setImageUrl(URL.createObjectURL(file));
       }
 
@@ -41,16 +48,21 @@ export default function Detection() {
           { method: "POST", body: formData }
         );
 
+        if (!res.ok) throw new Error("Video detection failed");
+
         const blob = await res.blob();
         setVideoUrl(URL.createObjectURL(blob));
       }
 
+      else {
+        alert("Unsupported file type");
+      }
     } catch (err) {
-      alert("Detection failed");
       console.error(err);
+      alert(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -74,16 +86,27 @@ export default function Detection() {
       <br /><br />
 
       <button onClick={handleDetect} disabled={loading}>
-        {loading ? "Processing..." : "Detect"}
+        {loading ? "Detecting..." : "Detect"}
       </button>
 
       <br /><br />
 
-      {imageUrl && <img src={imageUrl} style={{ width: "100%" }} />}
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt="result"
+          style={{ width: "100%", borderRadius: 8 }}
+        />
+      )}
 
       {videoUrl && (
-        <video src={videoUrl} controls style={{ width: "100%" }} />
+        <video
+          src={videoUrl}
+          controls
+          style={{ width: "100%", borderRadius: 8 }}
+        />
       )}
     </div>
   );
 }
+//hi 

@@ -31,6 +31,7 @@ app.post("/api/upload", upload.single("photo"), (req, res) => {
 
   // incoming GPS metadata optional
   const { lat, lng, accuracy, ts } = req.body;
+  console.log(req.body,'req.body')
 
   // construct public URL
   const fileUrl = `/uploads/${encodeURIComponent(req.file.filename)}`;
