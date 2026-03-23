@@ -1203,7 +1203,9 @@ export default function CameraCapture({ isOnline = true, onImage }) {
         </div>
       )}
 
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      {error && <div className="camera-error">{error}</div>}
+
+      <canvas ref={canvasRef} className="camera-canvas" />
     </div>
   );
 } 
