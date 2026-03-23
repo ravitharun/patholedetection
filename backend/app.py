@@ -1,19 +1,18 @@
 import os
 import shutil
-import uuid
 import cv2
-
 from fastapi import FastAPI, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from ultralytics import YOLO
 
-# ---------------- APP ----------------
+# ---------------- APP INIT ----------------
 app = FastAPI(title="ML Detection Backend")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -45,11 +44,7 @@ async def detect_image(
     model: str = Query(...),
     image: UploadFile = File(...)
 ):
-    if model not in models:
-        return {"error": "Invalid model"}
-
     image_path = os.path.join(UPLOAD_DIR, image.filename)
-
     with open(image_path, "wb") as f:
         shutil.copyfileobj(image.file, f)
 
@@ -57,12 +52,12 @@ async def detect_image(
 
     detections = []
     for r in results:
-        if r.boxes:
-            for box in r.boxes:
+        if r.boxes is not None:
+            for b in r.boxes:
                 detections.append({
-                    "class_id": int(box.cls[0]),
-                    "confidence": float(box.conf[0]),
-                    "bbox": box.xyxy[0].tolist()
+                    "class_id": int(b.cls[0]),
+                    "confidence": float(b.conf[0]),
+                    "bbox": b.xyxy[0].tolist()
                 })
 
     return {
@@ -76,12 +71,8 @@ async def detect_video(
     model: str = Query(...),
     video: UploadFile = File(...)
 ):
-    if model not in models:
-        return {"error": "Invalid model"}
-
-    uid = uuid.uuid4().hex
-    input_path = os.path.join(UPLOAD_DIR, f"{uid}_{video.filename}")
-    output_path = os.path.join(OUTPUT_DIR, f"out_{uid}.mp4")
+    input_path = os.path.join(UPLOAD_DIR, video.filename)
+    output_path = os.path.join(OUTPUT_DIR, f"out_{video.filename}")
 
     # Save uploaded video
     with open(input_path, "wb") as f:
@@ -91,35 +82,35 @@ async def detect_video(
 
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS) or 25
+    fps = cap.get(cv2.CAP_PROP_FPS)
 
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    fourcc = cv2.VideoWriter_fourcc(*"avc1")
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-    model_obj = models[model]
+    model_yolo = models[model]
 
-    while cap.isOpened():
+    while True:
         ret, frame = cap.read()
         if not ret:
             break
 
-        results = model_obj(frame)
+        results = model_yolo(frame)
 
         for r in results:
-            if r.boxes:
-                for box in r.boxes:
-                    x1, y1, x2, y2 = map(int, box.xyxy[0])
-                    conf = float(box.conf[0])
+            if r.boxes is not None:
+                for b in r.boxes:
+                    x1, y1, x2, y2 = map(int, b.xyxy[0])
+                    conf = float(b.conf[0])
 
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     cv2.putText(
                         frame,
                         f"{conf:.2f}",
                         (x1, y1 - 10),
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.6,
-                        (0, 0, 255),
-                        2,
+                        (0, 255, 0),
+                        2
                     )
 
         out.write(frame)
@@ -130,5 +121,5 @@ async def detect_video(
     return FileResponse(
         output_path,
         media_type="video/mp4",
-        filename="detected_video.mp4"
+        filename=os.path.basename(output_path)
     )

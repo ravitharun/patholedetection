@@ -7,15 +7,20 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Node
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+build/
+
+# Env
 .env
 .env.*.local
+*.local
 
-
-# Editor directories and files
+# Editor files
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -32,19 +37,16 @@ backend/venv/
 __pycache__/
 *.pyc
 
-# Node
-node_modules/
-
-# Environment
-.env
-
-# Build
-dist/
-build/
-
 # Backend runtime data
 backend/uploads/
 backend/outputs/
 
-# ML models (optional but recommended)
-backend/models/**/*.pt
+# ML models (IMPORTANT)
+*.pt
+*.pth
+*.h5
+*.pkl
+
+# Media & temp files
+media/
+uploads/
