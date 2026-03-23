@@ -376,7 +376,6 @@ const App = () => {
       {position?.lat=="" && position?.lng=="" &&
       <UserLocationStatus></UserLocationStatus>
       }
-
       {/* ✅ ONLY ONE MAP */}
       <HereMap
         LAT={position?.lat}

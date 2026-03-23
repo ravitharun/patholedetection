@@ -207,7 +207,7 @@ function Waether({ lat }) {
                 const res = await axios.get(
                     `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${key}&units=metric`
                 )
-
+// console.log((res),"resx")
                 setWeather(res.data)
 
             } catch (err) {

@@ -40,8 +40,11 @@ export default defineConfig({
     ],
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        // target: "http://localhost:3001",
+        target: "https://data.traffic.hereapi.com",
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+        // changeOrigin: true,
       },
     },
   },
