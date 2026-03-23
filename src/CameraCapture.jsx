@@ -238,11 +238,11 @@
 // //     console.log(isMobile, "isMobile");
 
 // //     // ❌ Block desktop
-// //     if (!isMobile) {
-// //       toast.info("Please use mobile view 📱", { position: "top-center" });
-// //       setshowInfo(true);
-// //       return
-// //     }
+//     if (!isMobile) {
+//       toast.info("Please use mobile view 📱", { position: "top-center" });
+//       setshowInfo(true);
+//       return
+//     }
 
 // //     // ✅ Allow mobile
 // //     setshowInfo(false);
@@ -951,6 +951,7 @@ export default function CameraCapture({ isOnline = true, onImage }) {
   const [error, setError] = useState(null);
   const [facing, setFacing] = useState("environment");
   const [captures, setCaptures] = useState([]);
+  const [ShowInfo, setshowInfo] = useState(false)
 
   const isMobile = window.innerWidth <= 768;
 
@@ -961,11 +962,11 @@ export default function CameraCapture({ isOnline = true, onImage }) {
       return;
     }
     const isMobile = localStorage.getItem("isuser_Mobile") === "true";
-    //     // 
-    //     // console.log(isMobile, "isMobile");
+    console.log(isMobile)
 
-    //     // ❌ Block desktop
-    if (!isMobile) {
+    // //     console.log(isMobile, "isMobile");
+    // //     // ❌ Block desktop
+    if (isMobile) {
       toast.info("Please use mobile view 📱", { position: "top-center" });
       setshowInfo(true);
       return
@@ -1203,9 +1204,7 @@ export default function CameraCapture({ isOnline = true, onImage }) {
         </div>
       )}
 
-      {error && <div className="camera-error">{error}</div>}
-
-      <canvas ref={canvasRef} className="camera-canvas" />
+      <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
   );
 } 

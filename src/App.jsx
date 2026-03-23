@@ -280,6 +280,7 @@ import Mobileerror from "./Mobileerror";
 import Loader from "./Loader";
 import Waether from "./Waether";
 import UserLocationStatus from "./UserLocationStatus";
+import MobileUseAlert from "./MobileUseAlert";
 
 const App = () => {
   const [position, setPosition] = useState([]);
@@ -324,8 +325,6 @@ const App = () => {
       { enableHighAccuracy: true }
     );
 
-    window.addEventListener("online", on);
-    window.addEventListener("offline", off);
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -369,44 +368,9 @@ const App = () => {
   };
 
   return (
-    <div className="app-root">
-      {!isOnline && <div className="offline-banner">Offline mode</div>}
-
-      <div className="camera-panel">
-        <CameraCapture isOnline={isOnline} onUploadSuccess={handleUploadSuccess} />
-      </div>
-
-      <div className="map-area">
-        <MapContainer
-          center={position || [12.9716, 77.5946]}
-          zoom={13}
-          className="leaflet-map"
-        >
-          {/* HERE BASE MAP */}
-          <TileLayer
-            url={`https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?apiKey=${HERE_API_KEY}`}
-            attribution="© HERE"
-          />
-
-          {position && <FlyTo position={position} />}
-
-          {position && (
-            <Marker position={position} icon={icon}>
-              <Popup>Current location</Popup>
-            </Marker>
-          )}
-
-          {captures.map((c, i) => (
-            <Marker key={i} position={c.pos} icon={icon}>
-              <Popup>
-                Pothole captured here
-                <br />
-                <img src={c.fileUrl} className="popup-image" />
-              </Popup>
-            </Marker>
-          ))}
     <>
       <Navbar></Navbar>
+      <MobileUseAlert></MobileUseAlert>
       {ShowInfo && <>
 
         <Mobileerror />
@@ -457,9 +421,8 @@ const App = () => {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
 export default App;
-
