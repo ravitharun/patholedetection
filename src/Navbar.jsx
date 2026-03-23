@@ -49,7 +49,7 @@ function Navbar({ page }) {
 
     return (
         <>
-            <MobileUseAlert></MobileUseAlert>
+            {/* <MobileUseAlert></MobileUseAlert> */}
             <nav style={navStyle}>
                 <div style={containerStyle}>
                     <Link to="/">
