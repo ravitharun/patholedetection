@@ -1,9 +1,17 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from .services import create_notification
+from django.http import JsonResponse
+from .models import Notification
 
-@api_view(['POST'])
-def notify(request):
-    message = request.data.get('message', '')
 
-    return Response(create_notification(message))
+def get_notifications(request):
+    notifications = Notification.objects.all().order_by('-created_at')[:20]
+
+    data = []
+    for n in notifications:
+        data.append({
+            "type": n.type,
+            "message": n.message,
+            "confidence": n.confidence,
+            "time": n.created_at
+        })
+
+    return JsonResponse({"notifications": data})

@@ -1,20 +1,34 @@
+from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.core.files.storage import default_storage
-from .services import process_pothole_detection
+from .services import process_detection
+from django.conf import settings
+from django.http import FileResponse, HttpResponse
+import os
 
+
+# ✅ UI PAGE
+def upload_page(request):
+    return render(request, "upload.html")
+
+
+# ✅ API (POST)
 @api_view(['POST'])
-def detect_pothole_api(request):
-    if 'image' not in request.FILES:
-        return Response({"error": "No image uploaded"}, status=400)
+def detect_api(request):
+    file = request.FILES.get('file')
 
-    image = request.FILES['image']
-    file_path = default_storage.save(image.name, image)
-    full_path = default_storage.path(file_path)
+    if not file:
+        return Response({"error": "No file uploaded"}, status=400)
 
-    detections = process_pothole_detection(full_path)
+    result = process_detection(file)
+    return Response(result)
 
-    return Response({
-        "message": "Detection complete",
-        "detections": detections
-    })
+
+# ✅ MEDIA SERVE
+def get_media(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'))
+    else:
+        return HttpResponse("File not found", status=404)
