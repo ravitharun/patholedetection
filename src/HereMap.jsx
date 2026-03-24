@@ -1,21 +1,30 @@
-
 import axios from "axios";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
+import Loader from "./Loader";
 
-const HereMap = ({ LAT, LONG, markers = [], accuracy, FromLocation, ToLocation, userAcceptedlivelatlong }) => {
-  console.log(FromLocation, ToLocation, userAcceptedlivelatlong,"FromLocation, ToLocation, userAcceptedlivelatlong")
-  console.log(userAcceptedlivelatlong.lat, userAcceptedlivelatlong.lng, "userAcceptedlivelatlong")
+const HereMap = ({
+  LAT,
+  LONG,
+  markers = [],
+  accuracy,
+  FromLocation,
+  ToLocation,
+  userAcceptedlivelatlong,
+}) => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
+
 
   const userMarkerRef = useRef(null);
   const accuracyCircleRef = useRef(null);
 
   const potholeGroupRef = useRef(null);
   const incidentGroupRef = useRef(null);
+  const routePolylineRef = useRef([]); // ✅ Track route polylines
 
-  const prevCoords = useRef(null);
+  const [loader, setLoader] = useState(false);
+  const [data, setData] = useState([]);
 
   /* 🚀 LOAD HERE MAP */
   useEffect(() => {
@@ -61,23 +70,19 @@ const HereMap = ({ LAT, LONG, markers = [], accuracy, FromLocation, ToLocation, 
 
       const defaultLayers = platform.createDefaultLayers();
 
-      const map = new window.H.Map(
-        mapRef.current,
-        defaultLayers.vector.normal.map,
-        {
-          center: { lat: LAT || 12.9716, lng: LONG || 77.5946 },
-          zoom: 16,
-          pixelRatio: window.devicePixelRatio || 1,
-        }
-      );
+      const map = new window.H.Map(mapRef.current, defaultLayers.vector.normal.map, {
+        center: { lat: LAT || 12.9716, lng: LONG || 77.5946 },
+        zoom: 16,
+        pixelRatio: window.devicePixelRatio || 1,
+      });
 
       new window.H.mapevents.Behavior(new window.H.mapevents.MapEvents(map));
       window.H.ui.UI.createDefault(map, defaultLayers);
 
-      // ✅ Traffic layer
+      // Traffic layer
       map.addLayer(defaultLayers.vector.traffic.map);
 
-      // ✅ Groups
+      // Groups
       potholeGroupRef.current = new window.H.map.Group();
       incidentGroupRef.current = new window.H.map.Group();
       map.addObject(potholeGroupRef.current);
@@ -103,7 +108,7 @@ const HereMap = ({ LAT, LONG, markers = [], accuracy, FromLocation, ToLocation, 
 
     map.setCenter(coords, true);
 
-    // 👤 User Marker
+    // User marker
     if (!userMarkerRef.current) {
       const icon = new window.H.map.Icon(
         "https://cdn-icons-png.flaticon.com/512/684/684908.png",
@@ -115,7 +120,7 @@ const HereMap = ({ LAT, LONG, markers = [], accuracy, FromLocation, ToLocation, 
       userMarkerRef.current.setGeometry(coords);
     }
 
-    // 🎯 Accuracy Circle
+    // Accuracy circle
     if (accuracy) {
       if (!accuracyCircleRef.current) {
         accuracyCircleRef.current = new window.H.map.Circle(coords, accuracy, {
@@ -157,71 +162,92 @@ const HereMap = ({ LAT, LONG, markers = [], accuracy, FromLocation, ToLocation, 
 
     const fetchRouteAndIncidents = async () => {
       try {
-        // Geocode From
-        const fromRes = await axios.get(
-          `https://geocode.search.hereapi.com/v1/geocode?q=${FromLocation}&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
-        );
-        const fromPos = userAcceptedlivelatlong ? userAcceptedlivelatlong : fromRes.data.items[0].position;
-        // console.log(userAcceptedlivelatlong ? userAcceptedlivelatlong.lat : fromPos.lat, "userAcceptedlivelatlong.lat ? userAcceptedlivelatlong.lat : fromPos.lat")
-        console.log(fromPos, "fromPos")
-        // Geocode To
-        const toRes = await axios.get(
-          `https://geocode.search.hereapi.com/v1/geocode?q=${ToLocation}&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
-        );
+        setLoader(true);
+
+        // 1️⃣ Parallel geocode
+        const [fromRes, toRes] = await Promise.all([
+          axios.get(
+            `https://geocode.search.hereapi.com/v1/geocode?q=${FromLocation}&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+          ),
+          axios.get(
+            `https://geocode.search.hereapi.com/v1/geocode?q=${ToLocation}&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+          ),
+        ]);
+        const fromPos = userAcceptedlivelatlong || fromRes.data.items[0].position;
         const toPos = toRes.data.items[0].position;
 
-        // Get route polyline
+        // 2️⃣ Get route polyline
         const routeRes = await axios.get(
-          `https://router.hereapi.com/v8/routes?transportMode=car&origin=${userAcceptedlivelatlong.lat ? userAcceptedlivelatlong.lat : fromPos.lat},${userAcceptedlivelatlong.lng ? userAcceptedlivelatlong.lng : fromPos.lng}&destination=${toPos.lat},${toPos.lng}&return=polyline&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+          `https://router.hereapi.com/v8/routes?transportMode=car&origin=${fromPos.lat.toFixed(
+            6
+          )},${fromPos.lng.toFixed(6)}&destination=${toPos.lat},${toPos.lng}&return=polyline&apiKey=${import.meta.env.VITE_HERE_API_KEY
+          }`
         );
+
         const routeSections = routeRes.data.routes[0].sections;
-        console.log(routeSections, "routeSections")
+        // check the time and date destiation 
+        console.log(new Date(routeSections[0].departure.time).toTimeString(), `Destination Time u reach excepted  from ${userAcceptedlivelatlong ? userAcceptedlivelatlong : FromLocation}- to ${ToLocation}`)
+        setData(routeSections);
 
-        // Clear old route markers
-        if (incidentGroupRef.current) {
-          incidentGroupRef.current.removeAll();
-        }
+        // ✅ Clear old route polylines
+        routePolylineRef.current.forEach((polyline) => map.removeObject(polyline));
+        routePolylineRef.current = [];
 
-        // Draw route polyline on map
+        // Draw route
         routeSections.forEach((section) => {
           const lineString = window.H.geo.LineString.fromFlexiblePolyline(section.polyline);
           const polyline = new window.H.map.Polyline(lineString, {
             style: { strokeColor: "rgba(0, 128, 255, 0.7)", lineWidth: 6 },
           });
           map.addObject(polyline);
+          routePolylineRef.current.push(polyline);
         });
 
-        // Fetch traffic incidents around current location
-        const res = await axios.get("https://data.traffic.hereapi.com/v7/incidents", {
-          params: {
-            apiKey: import.meta.env.VITE_HERE_API_KEY,
-            in: `circle:${LAT},${LONG};r=5000`,
-            locationReferencing: "shape",
-          },
-        });
+        setLoader(false);
 
-        const incidents = res.data.results;
-        incidents?.forEach((item) => {
-          const point = item.location?.shape?.links?.[0]?.points?.[0];
-          if (!point || !point.lat || !point.lng) return;
+        // 3️⃣ Fetch traffic incidents asynchronously
+        axios
+          .get("https://data.traffic.hereapi.com/v7/incidents", {
+            params: {
+              apiKey: import.meta.env.VITE_HERE_API_KEY,
+              in: `circle:${LAT},${LONG};r=5000`,
+              locationReferencing: "shape",
+            },
+          })
+          .then((res) => {
+            const incidents = res.data.results;
+            incidents?.forEach((item) => {
+              const point = item.location?.shape?.links?.[0]?.points?.[0];
+              if (!point || !point.lat || !point.lng) return;
 
-          const icon = new window.H.map.Icon(
-            "https://cdn-icons-png.flaticon.com/512/483/483408.png",
-            { size: { w: 28, h: 28 } }
-          );
-          const marker = new window.H.map.Marker({ lat: point.lat, lng: point.lng }, { icon });
-          incidentGroupRef.current.addObject(marker);
-        });
+              const icon = new window.H.map.Icon(
+                "https://cdn-icons-png.flaticon.com/512/483/483408.png",
+                { size: { w: 28, h: 28 } }
+              );
+              const marker = new window.H.map.Marker({ lat: point.lat, lng: point.lng }, { icon });
+              incidentGroupRef.current.addObject(marker);
+            });
+          })
+          .catch(console.error);
       } catch (error) {
         console.error(error);
         toast.error("Map load error: " + (error.response?.data || error.message));
+        setLoader(false);
       }
     };
 
     fetchRouteAndIncidents();
   }, [LAT, LONG, FromLocation, ToLocation]);
 
-  return <div ref={mapRef} style={{ width: "100%", height: "100vh" }} />;
+  return (
+    <>
+      {loader && <Loader loadername="Calculating the route" />}
+      <div ref={mapRef} style={{ width: "100%", height: "100vh" }} >
+
+        { }
+      </div>
+    </>
+  );
 };
 
 export default HereMap;

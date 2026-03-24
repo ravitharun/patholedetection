@@ -341,7 +341,7 @@ const App = () => {
                 </button>
               )}
 
-              {!userAcceptedlive  ?
+              {!userAcceptedlive ?
                 <div className="form-group">
                   <label htmlFor="from-location" style={{ color: "black" }}>From Location</label>
                   <input
@@ -353,7 +353,7 @@ const App = () => {
                     onChange={(e) => setFromLocation(e.target.value)}
                     autoComplete="off"
                   />
-                </div> : <div style={{color:"black"}}>
+                </div> : <div style={{ color: "black" }}>
 
                   Live Loaction Added
                 </div>}
@@ -385,17 +385,16 @@ const App = () => {
       {!position?.lat || !position?.lng ? (
         <Loader loadername="Getting your Live Location..." />
       ) : (
-        <HereMap
+<HereMap
           LAT={position.lat}
           LONG={position.lng}
           accuracy={position.accuracy}
           markers={captures}
           FromLocation={FromLocation}
           ToLocation={ToLocation}
-          userAcceptedlivelatlong={userAcceptedlive ? position : ""}
+          userAcceptedlivelatlong={userAcceptedlive ? position : null}
         />
       )}
-
       <div className={`status-box ${captures.length > 0 ? "danger" : ""}`}>
         {captures.length === 0 ? "🚫 No potholes detected" : `🚧 ${captures.length} Pothole${captures.length > 1 ? "s" : ""} Detected`}
       </div>
