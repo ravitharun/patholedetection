@@ -672,7 +672,7 @@ const HereMap = ({ LAT, LONG, markers = [], accuracy }) => {
         );
 
         const data = res.data;
-        console.log(res.data,"res.data")
+        console.log(res.data, "res.data")
 
         if (incidentGroupRef.current) {
           incidentGroupRef.current.removeAll();
@@ -710,10 +710,13 @@ const HereMap = ({ LAT, LONG, markers = [], accuracy }) => {
   }, [LAT, LONG]);
 
   return (
-    <div
-      ref={mapRef}
-      style={{ width: "100%", height: "100vh" }}
-    />
+    <>
+ 
+      <div
+        ref={mapRef}
+        style={{ width: "100%", height: "100vh" }}
+      />
+    </>
   );
 };
 

@@ -366,7 +366,8 @@ const App = () => {
     toast.success("Image saved on map!", { position: "top-center" });
     setCapturedUrl(null);
   };
-
+  console.log(!position?.lat && !position?.lng, "check")
+  console.log(position?.lat, position?.lng, "vlu")
   return (
     <>
       <Navbar></Navbar>
@@ -375,17 +376,22 @@ const App = () => {
 
         <Mobileerror />
       </>}
-      {position?.lat=="" && position?.lng=="" &&
-      <UserLocationStatus></UserLocationStatus>
+      {position?.lat == "" && position?.lng == "" &&
+        <UserLocationStatus></UserLocationStatus>
       }
-      {/* ✅ ONLY ONE MAP */}
-      <HereMap
-        LAT={position?.lat}
-        LONG={position?.lng}
-        accuracy={position?.accuracy}
-        markers={captures}
-      />
-
+      {/* <Loader loadername="Getting your Live Location." ></Loader> */}
+      {(!position?.lat || !position?.lng) ? (
+        // Show loader if either latitude or longitude is missing
+        <Loader loadername="Getting your Live Location..." />
+      ) : (
+        // Show the map once position is available
+        <HereMap
+          LAT={position.lat}
+          LONG={position.lng}
+          accuracy={position.accuracy}
+          markers={captures}
+        />
+      )}
       {/* Status Banner */}
       {captures.length === 0 ? (
         <div className="status-box">
