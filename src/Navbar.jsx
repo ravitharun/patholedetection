@@ -4,7 +4,6 @@ import MobileUseAlert from "./MobileUseAlert";
 import { check_IsmobileView } from "./MiniDb";
 import { Link } from "react-router-dom";
 function Navbar({ page }) {
-    console.log(page, "page")
     const [active, setActive] = useState(page == undefined ? "report" : page);
 
     const navStyle = {

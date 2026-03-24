@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { check_IsmobileView } from './MiniDb'
 
 function Mobileerror({ handelclose, error }) {
-    console.log(error, "error")
+
     const [accept, setaccept] = useState(false)
-    console.log(check_IsmobileView, "Df")
+
     useEffect(() => {
 
 
