@@ -5,18 +5,26 @@ import { registerSW } from "virtual:pwa-register";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { lazy, Suspense } from 'react';
 import Loader from './Loader.jsx';
-
 const App = lazy(() => import('./App.jsx'));
 const Addnearby = lazy(() => import('./Addnearby.jsx'));
 const Userprofile = lazy(() => import('./Userprofile.jsx'));
+const Home = lazy(() => import('./Home.jsx'));
 registerSW({ immediate: true });
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
+   
     <Routes>
-      <Route path="/" element={<Suspense fallback={<Loader />}>
+      <Route path="/Map" element={<Suspense fallback={<Loader />}>
         <App />
       </Suspense>} />
+      <Route path="/" element={<Suspense fallback={<Loader />}>
+        <Home />
+      </Suspense>} />
+
+      
+
+
       <Route path="/nearby" element={<Suspense fallback={<Loader />}>
     
         <Addnearby />

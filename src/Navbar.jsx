@@ -52,7 +52,7 @@ function Navbar({ page }) {
             {/* <MobileUseAlert></MobileUseAlert> */}
             <nav style={navStyle}>
                 <div style={containerStyle}>
-                    <Link to="/">
+                    <Link to="/Map">
                         {/* Report */}
                         <div style={getItemStyle("report")} onClick={() => setActive("report")}>
                             <FaMapMarkedAlt style={iconStyle("report")} />
