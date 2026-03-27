@@ -1,0 +1,1 @@
+export let check_IsmobileView = localStorage.getItem("isuser_Mobile")

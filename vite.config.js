@@ -1,10 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [
-    react(),
+    react(), tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
@@ -39,8 +40,11 @@ export default defineConfig({
     ],
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        // target: "http://localhost:3001",
+        target: "https://data.traffic.hereapi.com",
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+        // changeOrigin: true,
       },
     },
   },

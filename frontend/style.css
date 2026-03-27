@@ -1,0 +1,31 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f4f6f8;
+}
+
+.viewer {
+  position: relative;
+  display: inline-block;
+  margin-top: 20px;
+}
+
+#preview {
+  max-width: 90vw;
+  display: block;
+}
+
+#canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+pre {
+  background: black;
+  color: #00ff00;
+  padding: 10px;
+  max-width: 90vw;
+  margin: 20px auto;
+  overflow-x: auto;
+}

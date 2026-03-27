@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ML Detection System</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f6f6f6;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 520px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .image-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    img, video {
+      max-width: 100%;
+      display: none;
+      border-radius: 6px;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    button, select, input {
+      padding: 8px;
+      margin: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🚦 ML Detection System</h2>
+
+<div class="container">
+
+  <select id="model">
+    <option value="pothole">Pothole</option>
+    <option value="lane_detection">Lane Detection</option>
+    <option value="traffic_light">Traffic Light</option>
+  </select>
+
+  <br>
+
+  <input type="file" id="fileInput" accept="image/*,video/*" />
+
+  <br>
+
+  <button onclick="detect()">Detect</button>
+
+  <div class="image-wrapper">
+    <img id="imagePreview">
+    <video id="videoPreview" controls></video>
+    <canvas id="canvas"></canvas>
+  </div>
+
+</div>
+
+<script>
+const BACKEND_URL = "https://comedial-unbreeched-bobbi.ngrok-free.dev";
+
+async function detect() {
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+  const model = document.getElementById("model").value;
+
+  if (!file) {
+    alert("Please select image or video");
+    return;
+  }
+
+  if (file.type.startsWith("image")) {
+    detectImage(file, model);
+  } else if (file.type.startsWith("video")) {
+    detectVideo(file, model);
+  } else {
+    alert("Unsupported file type");
+  }
+}
+
+async function detectImage(file, model) {
+  const img = document.getElementById("imagePreview");
+  const video = document.getElementById("videoPreview");
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  video.style.display = "none";
+  img.style.display = "block";
+
+  img.src = URL.createObjectURL(file);
+
+  img.onload = async () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await fetch(
+      `${BACKEND_URL}/detect?model=${model}`,
+      { method: "POST", body: formData }
+    );
+
+    const data = await res.json();
+    drawBoxes(data.detections, img, canvas, ctx);
+  };
+}
+
+async function detectVideo(file, model) {
+  const img = document.getElementById("imagePreview");
+  const video = document.getElementById("videoPreview");
+  const canvas = document.getElementById("canvas");
+
+  img.style.display = "none";
+  canvas.width = canvas.height = 0;
+
+  const formData = new FormData();
+  formData.append("video", file);
+
+  const res = await fetch(
+    `${BACKEND_URL}/detect-video?model=${model}`,
+    { method: "POST", body: formData }
+  );
+
+  const blob = await res.blob();
+  video.src = URL.createObjectURL(blob);
+  video.style.display = "block";
+}
+
+function drawBoxes(detections, img, canvas, ctx) {
+  const scaleX = canvas.width / img.naturalWidth;
+  const scaleY = canvas.height / img.naturalHeight;
+
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 3;
+  ctx.font = "14px Arial";
+  ctx.fillStyle = "red";
+
+  detections.forEach(d => {
+    const [x1, y1, x2, y2] = d.bbox;
+
+    const x = x1 * scaleX;
+    const y = y1 * scaleY;
+    const w = (x2 - x1) * scaleX;
+    const h = (y2 - y1) * scaleY;
+
+    ctx.strokeRect(x, y, w, h);
+    ctx.fillText(
+      `${d.class_id} (${(d.confidence * 100).toFixed(1)}%)`,
+      x,
+      y - 5
+    );
+  });
+}
+</script>
+
+</body>
+</html>
