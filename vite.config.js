@@ -79,12 +79,12 @@ export default defineConfig({
 
         icons: [
           {
-            src: "/icons/icon-192.png",
+            src: "/icons/icar_3151535.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "/icons/icon-512.png",
+            src: "/icons/car_3151535.png",
             sizes: "512x512",
             type: "image/png",
           },
