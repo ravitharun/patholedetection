@@ -9,6 +9,7 @@ const App = lazy(() => import('./App.jsx'));
 const Addnearby = lazy(() => import('./Addnearby.jsx'));
 const Userprofile = lazy(() => import('./Userprofile.jsx'));
 const Home = lazy(() => import('./Home.jsx'));
+// register service worker
 registerSW({ immediate: true });
 
 createRoot(document.getElementById('root')).render(
