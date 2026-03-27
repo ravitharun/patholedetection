@@ -16,7 +16,7 @@ def upload_page(request):
 @api_view(['POST'])
 def detect_api(request):
     file = request.FILES.get('file')
-
+    print(file,"file")
     if not file:
         return Response({"error": "No file uploaded"}, status=400)
 
