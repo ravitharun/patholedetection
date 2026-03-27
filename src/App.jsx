@@ -385,6 +385,11 @@ const App = () => {
       {!position?.lat || !position?.lng ? (
         <Loader loadername="Getting your Live Location..." />
       ) : (
+
+
+
+
+        // hey
 <HereMap
           LAT={position.lat}
           LONG={position.lng}
