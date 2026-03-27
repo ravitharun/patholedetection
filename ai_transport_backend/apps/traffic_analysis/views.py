@@ -6,6 +6,7 @@ from .services import calculate_traffic_density
 def traffic_analysis(request):
     vehicle_count = request.data.get('vehicle_count', 0)
     road_length = request.data.get('road_length', 1)
+    print(f'${vehicle_count}-${road_length}')
 
     density = calculate_traffic_density(vehicle_count, road_length)
 

@@ -13,7 +13,8 @@ app = FastAPI(title="ML Detection Backend")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],  # better than *
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -35,11 +36,15 @@ models = {
 }
 
 # ---------------- HEALTH ----------------
+
+
 @app.get("/ping")
 def ping():
     return {"status": "ok"}
 
 # ---------------- IMAGE DETECTION ----------------
+
+
 @app.post("/detect")
 async def detect_image(
     model: str = Query(...),
@@ -71,6 +76,8 @@ async def detect_image(
     }
 
 # ---------------- VIDEO DETECTION ----------------
+
+
 @app.post("/detect-video")
 async def detect_video(
     model: str = Query(...),
