@@ -1,8 +1,7 @@
 from django.urls import path
-from .views import detect_api, upload_page, get_media
+from .views import upload_page, detect_all
 
 urlpatterns = [
-    path('', upload_page),                    # 🔥 FIX (ROOT PAGE)
-    path('detect/', detect_api),
-    path('media/<path:path>/', get_media),
+    path('', upload_page),         # UI page
+    path('detect/', detect_all),   # API
 ]

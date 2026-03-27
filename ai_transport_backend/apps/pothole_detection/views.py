@@ -1,34 +1,95 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .services import process_detection
-from django.conf import settings
-from django.http import FileResponse, HttpResponse
+import cv2
+import numpy as np
 import os
 
+from .ai_model import detect_smart
+from apps.notifications.models import Notification   # 🔥 IMPORTANT
 
-# ✅ UI PAGE
+
+# ✅ Upload Page + Detection + Notification Save
 def upload_page(request):
+
+    if request.method == "POST":
+        file = request.FILES.get('file')
+
+        if not file:
+            return render(request, "upload.html", {"error": "No file uploaded"})
+
+        try:
+            file_bytes = np.asarray(bytearray(file.read()), dtype=np.uint8)
+            frame = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+
+            # 🔥 Run detection
+            processed_frame, detections = detect_smart(frame, mode="auto")
+
+            # 🔥 SAVE IMAGE
+            os.makedirs("media", exist_ok=True)
+            output_path = os.path.join("media", "output.jpg")
+            cv2.imwrite(output_path, processed_frame)
+
+            # 🔥 SAVE NOTIFICATIONS
+            for d in detections:
+                if d["type"] == "pothole":
+                    Notification.objects.create(
+                        type="pothole",
+                        message="⚠️ Pothole detected",
+                        confidence=d["confidence"]
+                    )
+
+                elif d["type"] == "signal":
+                    Notification.objects.create(
+                        type="signal",
+                        message=f"🚦 Signal: {d.get('color', 'unknown')}",
+                        confidence=d["confidence"]
+                    )
+
+                elif d["type"] == "lane":
+                    Notification.objects.create(
+                        type="lane",
+                        message="🛣️ Lane detected",
+                        confidence=d["confidence"]
+                    )
+
+            return render(request, "upload.html", {
+                "image_url": "/media/output.jpg",
+                "result": detections
+            })
+
+        except Exception as e:
+            return render(request, "upload.html", {"error": str(e)})
+
     return render(request, "upload.html")
 
 
-# ✅ API (POST)
+# ✅ API (optional)
 @api_view(['POST'])
-def detect_api(request):
+def detect_all(request):
     file = request.FILES.get('file')
 
     if not file:
         return Response({"error": "No file uploaded"}, status=400)
 
-    result = process_detection(file)
-    return Response(result)
+    try:
+        file_bytes = np.asarray(bytearray(file.read()), dtype=np.uint8)
+        frame = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
+        processed_frame, detections = detect_smart(frame, mode="auto")
 
-# ✅ MEDIA SERVE
-def get_media(request, path):
-    file_path = os.path.join(settings.MEDIA_ROOT, path)
+        os.makedirs("media", exist_ok=True)
+        output_path = os.path.join("media", "output.jpg")
+        cv2.imwrite(output_path, processed_frame)
 
-    if os.path.exists(file_path):
-        return FileResponse(open(file_path, 'rb'))
-    else:
-        return HttpResponse("File not found", status=404)
+        return Response({
+            "status": "success",
+            "detections": detections,
+            "image_url": "/media/output.jpg"
+        })
+
+    except Exception as e:
+        return Response({
+            "status": "error",
+            "message": str(e)
+        }, status=500)
