@@ -380,7 +380,7 @@ const App = () => {
           </div>
         </div>
       )}
-      <button onClick={() => setShowLocationModal((prev) => !prev)}>Open</button>
+      <button onClick={() => setShowLocationModal((prev) => !prev)}>Route</button>
       {ShowInfo && <Mobileerror />}
       {!position?.lat || !position?.lng ? (
         <Loader loadername="Getting your Live Location..." />
