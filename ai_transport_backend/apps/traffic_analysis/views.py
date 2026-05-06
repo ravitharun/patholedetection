@@ -4,13 +4,8 @@ from .services import calculate_traffic_density
 
 @api_view(['POST'])
 def traffic_analysis(request):
-    try:
-        vehicle_count = float(request.data.get('vehicle_count', 0))
-        road_length = float(request.data.get('road_length', 1))
-
-        # prevent division error
-        if road_length == 0:
-            return Response({"error": "road_length cannot be zero"}, status=400)
+    vehicle_count = request.data.get('vehicle_count', 0)
+    road_length = request.data.get('road_length', 1)
 
         density = calculate_traffic_density(vehicle_count, road_length)
 

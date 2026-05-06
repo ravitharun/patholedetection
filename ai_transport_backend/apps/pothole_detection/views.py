@@ -1,17 +1,24 @@
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .services import process_detection
+from django.conf import settings
+from django.http import FileResponse, HttpResponse
+import os
 
-@csrf_exempt
-def test_api(request):
-    return JsonResponse({"message": "Pothole API working"})
 
-@csrf_exempt
-def detect_pothole(request):
-    if request.method == "POST":
-        image = request.FILES.get("image")
+# ✅ UI PAGE
+def upload_page(request):
+    return render(request, "upload.html")
 
-        if not image:
-            return JsonResponse({"error": "No image uploaded"}, status=400)
+
+# ✅ API (POST)
+@api_view(['POST'])
+def detect_api(request):
+    file = request.FILES.get('file')
+
+    if not file:
+        return Response({"error": "No file uploaded"}, status=400)
 
         # 🔥 TODO: Replace with your AI model call
         result = {

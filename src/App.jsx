@@ -1,274 +1,64 @@
-
-// import React, { useEffect, useRef, useState } from "react";
-// import CameraCapture from "./CameraCapture";
-// import "./App.css";
-// import { ToastContainer, toast } from "react-toastify";
-// import HereMap from "./HereMap";
-// import Navbar from "./Navbar";
-// import { check_IsmobileView } from "./MiniDb";
-// import Mobileerror from "./Mobileerror";
-// import Loader from "./Loader";
-// import Waether from "./Waether";
-// import UserLocationStatus from "./UserLocationStatus";
-// import MobileUseAlert from "./MobileUseAlert";
-
-// const App = () => {
-//   const [position, setPosition] = useState([]);
-//   const [error, setError] = useState(null);
-//   const [capturedUrl, setCapturedUrl] = useState(null);
-//   const [captures, setCaptures] = useState([]);
-//   const [isOnline, setIsOnline] = useState(navigator.onLine);
-//   const [ShowInfo, setshowInfo] = useState(false)
-//   const [Check, setcheck] = useState(check_IsmobileView)
-//   const watchIdRef = useRef(null);
-
-//   const [FromLocation, setFromLocation] = useState('')
-//   const [ToLocation, setToLocation] = useState('')
-//   /* 🌐 Online / Offline */
-//   useEffect(() => {
-//     const on = () => setIsOnline(true);
-//     const off = () => setIsOnline(false);
-
-//     window.addEventListener("online", on);
-//     window.addEventListener("offline", off);
-
-//     return () => {
-//       window.removeEventListener("online", on);
-//       window.removeEventListener("offline", off);
-//     };
-//   }, []);
-
-//   /* 📍 Live Location */
-//   useEffect(() => {
-//     if (!navigator.geolocation) {
-//       setError("Geolocation not supported");
-//       return;
-//     }
-
-//     watchIdRef.current = navigator.geolocation.watchPosition(
-//       (p) =>
-//         setPosition({
-//           lat: p.coords.latitude,
-//           lng: p.coords.longitude,
-//           accuracy: p.coords.accuracy,
-
-//         }),
-//       (err) => setError(err.message),
-//       { enableHighAccuracy: true }
-//     );
-
-//     return () => {
-//       if (watchIdRef.current !== null) {
-//         navigator.geolocation.clearWatch(watchIdRef.current);
-//       }
-//     };
-//   }, []);
-
-//   /* 📸 Handle image preview */
-//   const handleImage = (blob) => {
-//     if (!blob) return;
-
-//     if (capturedUrl) {
-//       URL.revokeObjectURL(capturedUrl);
-//     }
-
-//     const url = URL.createObjectURL(blob);
-//     setCapturedUrl(url);
-//   };
-
-//   let Check_Byuser = localStorage.getItem("isuser_Mobile") == "true"
-//   console.log(Check_Byuser, "Check_Byuser")
-//   /* ⬆️ Upload simulation */
-//   const uploadCaptured = () => {
-//     if (!Check_Byuser) {
-//       console.log("first")
-//       return setshowInfo(true)
-//     }
-//     if (!capturedUrl || !position) {
-//       toast.info("Capture image first", { position: "top-center" });
-//       return;
-//     }
-
-//     setshowInfo(false)
-//     setCaptures((prev) => [
-//       ...prev,
-//       { pos: position, fileUrl: capturedUrl },
-//     ]);
-
-//     toast.success("Image saved on map!", { position: "top-center" });
-//     setCapturedUrl(null);
-//   };
-//   const handelSearch = (from, to) => {
-//     setFromLocation(from)
-//     setToLocation(to)
-//   }
-//   console.log(FromLocation, "from", ToLocation, "to")
-//   const [userAcceptedlive, seuserAcceptedlive] = useState(false)
-//   console.log(userAcceptedlive,"userAcceptedlive")
-//   const handelLiveLatlong = () => {
-//     seuserAcceptedlive(true)
-
-//   }
-//   return (
-//     <>
-//       <Navbar></Navbar>
-//       <MobileUseAlert></MobileUseAlert>
-// <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "400px", margin: "20px auto", padding: "15px", border: "1px solid #ccc", borderRadius: "10px", background: "#f9f9f9" }}>
-
-//   {/* Live Location Button */}
-//   {!userAcceptedlive ? (
-//     <button 
-//       onClick={handelLiveLatlong} 
-//       style={{ padding: "10px 15px", borderRadius: "5px", border: "none", background: "#007bff", color: "#fff", cursor: "pointer" }}
-//     >
-//       Go with Live Location From
-//     </button>
-//   ) : (
-//     <button 
-//       onClick={() => seuserAcceptedlive(false)} 
-//       style={{ padding: "10px 15px", borderRadius: "5px", border: "none", background: "#dc3545", color: "#fff", cursor: "pointer" }}
-//     >
-//       Cancel Live Location
-//     </button>
-//   )}
-
-//   {/* From Location */}
-//   <label style={{ fontWeight: "bold", marginTop: "10px",color:"black" }}>From Location</label>
-//   <input 
-//     type="text" 
-//     onChange={(e) => setFromLocation(e.target.value)} 
-//     style={{ padding: "8px 10px", borderRadius: "5px", border: "1px solid #ccc", fontSize: "14px" }}
-//   />
-
-//   {/* To Location */}
-//   <label style={{ fontWeight: "bold", marginTop: "10px" , color:"black"}}>To Location</label>
-//   <input 
-//     type="text" 
-//     onChange={(e) => setToLocation(e.target.value)} 
-//     style={{ padding: "8px 10px", borderRadius: "5px", border: "1px solid #ccc", fontSize: "14px" }}
-//   />
-// </div>
-//       {ShowInfo && <>
-
-//         <Mobileerror />
-//       </>}
-//       {position?.lat == "" && position?.lng == "" &&
-//         <UserLocationStatus></UserLocationStatus>
-//       }
-//       {/* <Loader loadername="Getting your Live Location." ></Loader> */}
-//       {(!position?.lat || !position?.lng) ? (
-//         // Show loader if either latitude or longitude is missing
-//         <Loader loadername="Getting your Live Location..." />
-//       ) : (
-//         // Show the map once position is available
-//         <HereMap
-//           LAT={position.lat}
-//           LONG={position.lng}
-//           accuracy={position.accuracy}
-//           markers={captures}
-//           FromLocation={FromLocation}
-//           ToLocation={ToLocation}
-//           userAcceptedlivelatlong={userAcceptedlive ? position : ""}
-//         />
-//       )}
-//       {/* Status Banner */}
-//       {captures.length === 0 ? (
-//         <div className="status-box">
-//           🚫 No potholes detected
-//         </div>
-//       ) : (
-//         <div className="status-box danger">
-//           🚧 {captures.length} Pothole
-//           {captures.length > 1 ? "s" : ""} Detected
-//         </div>
-//       )}
-
-//       {!isOnline && (
-//         <div className="offline-banner">
-//           You are offline
-//         </div>
-//       )}
-
-//       <ToastContainer />
-
-//       {/* Camera Panel */}
-//       <div className="camera-panel">
-//         <CameraCapture onImage={handleImage} isOnline={isOnline} />
-
-//         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-//           <button onClick={uploadCaptured}>Upload</button>
-//           <button onClick={() => setCapturedUrl(null)}>Clear</button>
-//         </div>
-
-//         {error && (
-//           <div style={{ color: "crimson", marginTop: 8 }}>
-//             {error}
-//           </div>
-//         )}
-//       </div>
-//     </>
-//   );
-// };
-
-// export default App;
 import React, { useEffect, useRef, useState } from "react";
 import CameraCapture from "./CameraCapture";
 import "./App.css";
 import { ToastContainer, toast } from "react-toastify";
 import HereMap from "./HereMap";
 import Navbar from "./Navbar";
-import { check_IsmobileView } from "./MiniDb";
 import Mobileerror from "./Mobileerror";
 import Loader from "./Loader";
-import UserLocationStatus from "./UserLocationStatus";
 import MobileUseAlert from "./MobileUseAlert";
 
 const App = () => {
-  const [position, setPosition] = useState([]);
+  const [position, setPosition] = useState(null);
   const [error, setError] = useState(null);
   const [capturedUrl, setCapturedUrl] = useState(null);
   const [captures, setCaptures] = useState([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [ShowInfo, setshowInfo] = useState(false);
-  const [Check, setcheck] = useState(check_IsmobileView);
+  const [showInfo, setShowInfo] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  console.log(showLocationModal, "showLocationModal")
+
+  const [fromLocation, setFromLocation] = useState("");
+  const [toLocation, setToLocation] = useState("");
+  const [userAcceptedLive, setUserAcceptedLive] = useState(false);
+
   const watchIdRef = useRef(null);
-
-  const [FromLocation, setFromLocation] = useState("");
-  const [ToLocation, setToLocation] = useState("");
-
-  const [userAcceptedlive, seuserAcceptedlive] = useState(false);
   const modalRef = useRef(null);
 
-  /* 🌐 Online / Offline */
   useEffect(() => {
     const on = () => setIsOnline(true);
     const off = () => setIsOnline(false);
+
     window.addEventListener("online", on);
     window.addEventListener("offline", off);
+
     return () => {
       window.removeEventListener("online", on);
       window.removeEventListener("offline", off);
     };
   }, []);
 
-  /* 📍 Live Location */
   useEffect(() => {
     if (!navigator.geolocation) {
       setError("Geolocation not supported");
       return;
     }
+
     watchIdRef.current = navigator.geolocation.watchPosition(
-      (p) =>
+      (p) => {
         setPosition({
           lat: p.coords.latitude,
           lng: p.coords.longitude,
           accuracy: p.coords.accuracy,
-        }),
+        });
+      },
       (err) => setError(err.message),
-      { enableHighAccuracy: true }
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000,
+      }
     );
+
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -276,27 +66,86 @@ const App = () => {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (capturedUrl) {
+        URL.revokeObjectURL(capturedUrl);
+      }
+    };
+  }, [capturedUrl]);
+
   const handleImage = (blob) => {
     if (!blob) return;
-    if (capturedUrl) URL.revokeObjectURL(capturedUrl);
+
+    if (capturedUrl) {
+      URL.revokeObjectURL(capturedUrl);
+    }
+
     setCapturedUrl(URL.createObjectURL(blob));
   };
 
-  const Check_Byuser = localStorage.getItem("isuser_Mobile") === "true";
-
-  const uploadCaptured = () => {
-    if (!Check_Byuser) return setshowInfo(true);
+  const uploadCaptured = async () => {
     if (!capturedUrl || !position) {
       toast.info("Capture image first", { position: "top-center" });
       return;
     }
-    setshowInfo(false);
-    setCaptures((prev) => [...prev, { pos: position, fileUrl: capturedUrl }]);
-    toast.success("Image saved on map!", { position: "top-center" });
-    setCapturedUrl(null);
+
+    try {
+      const blob = await fetch(capturedUrl).then((res) => res.blob());
+
+      const formData = new FormData();
+      formData.append("file", blob, "capture.jpg");
+      formData.append("lat", String(position.lat));
+      formData.append("lng", String(position.lng));
+
+      const res = await fetch("http://127.0.0.1:8000/api/pothole/detect/", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const data = await res.json();
+      const detections = Array.isArray(data?.detections) ? data.detections : [];
+
+      setCaptures((prev) => [
+        ...prev,
+        {
+          pos: {
+            lat: position.lat,
+            lng: position.lng,
+          },
+          fileUrl: data?.url || null,
+          detections,
+        },
+      ]);
+
+      if (detections.length === 0) {
+        toast.info("No potholes detected!", { position: "top-center" });
+      } else {
+        toast.success(`${detections.length} pothole(s) detected!`, {
+          position: "top-center",
+        });
+      }
+
+      if (capturedUrl) {
+        URL.revokeObjectURL(capturedUrl);
+      }
+      setCapturedUrl(null);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      toast.error("Upload failed!", { position: "top-center" });
+    }
   };
 
-  const handelLiveLatlong = () => seuserAcceptedlive(true);
+  const handleLiveLocationToggle = () => {
+    setUserAcceptedLive(true);
+    setFromLocation("");
+  };
+
+  const handleCancelLiveLocation = () => {
+    setUserAcceptedLive(false);
+  };
 
   const handleBackdropClick = (e) => {
     if (e.target === modalRef.current) {
@@ -304,85 +153,142 @@ const App = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleRouteSubmit = (e) => {
     e.preventDefault();
+
+    if (!toLocation.trim()) {
+      toast.info("Please enter destination");
+      return;
+    }
+
+    if (!position) {
+      toast.info("Live location not available yet");
+      return;
+    }
+
+    if (!userAcceptedLive && !fromLocation.trim()) {
+      toast.info("Please enter From location or use live location");
+      return;
+    }
+
+    toast.success("Navigation details saved", { position: "top-center" });
     setShowLocationModal(false);
   };
 
-  const handelStart = () => {
-    if (!FromLocation || !ToLocation || !position) {
-      return toast.info("from and to we ewant")
-    }
-    console.log("first")
-  }
+  const resolvedFromLocation = userAcceptedLive
+    ? `${position?.lat ?? ""}, ${position?.lng ?? ""}`
+    : fromLocation;
 
   return (
     <>
       <Navbar />
       <MobileUseAlert />
 
-      {/* 🌐 Location Modal */}
       {showLocationModal && (
-        <div className="location-modal-overlay" ref={modalRef} onClick={handleBackdropClick}>
+        <div
+          className="location-modal-overlay"
+          ref={modalRef}
+          onClick={handleBackdropClick}
+        >
           <div className="location-modal">
             <div className="modal-header">
               <h2 style={{ color: "black" }}>📍 Set Your Route</h2>
-              <button className="modal-close-btn" onClick={() => setShowLocationModal(false)}>×</button>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setShowLocationModal(false)}
+              >
+                ×
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="location-form">
-              {!userAcceptedlive ? (
-                <button type="button" className="live-location-btn active" onClick={handelLiveLatlong}>
+            <form onSubmit={handleRouteSubmit} className="location-form">
+              {!userAcceptedLive ? (
+                <button
+                  type="button"
+                  className="live-location-btn active"
+                  onClick={handleLiveLocationToggle}
+                >
                   📍 Use Live Location
                 </button>
               ) : (
-                <button type="button" className="live-location-btn cancel" onClick={() => seuserAcceptedlive(false)}>
+                <button
+                  type="button"
+                  className="live-location-btn cancel"
+                  onClick={handleCancelLiveLocation}
+                >
                   ❌ Cancel Live Location
                 </button>
               )}
 
-              {!userAcceptedlive  ?
+              {!userAcceptedLive ? (
                 <div className="form-group">
-                  <label htmlFor="from-location" style={{ color: "black" }}>From Location</label>
+                  <label htmlFor="from-location" style={{ color: "black" }}>
+                    From Location
+                  </label>
                   <input
                     id="from-location"
                     type="text"
                     placeholder="Enter starting point..."
-                    value={FromLocation}
+                    value={fromLocation}
                     style={{ color: "black" }}
                     onChange={(e) => setFromLocation(e.target.value)}
                     autoComplete="off"
                   />
-                </div> : <div style={{color:"black"}}>
-
-                  Live Loaction Added
-                </div>}
-
+                </div>
+              ) : (
+                <div style={{ color: "black" }}>
+                  Live Location Added
+                  {position && (
+                    <div style={{ marginTop: "6px", fontSize: "14px" }}>
+                      Lat: {position.lat.toFixed(6)}, Lng: {position.lng.toFixed(6)}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="form-group">
-                <label htmlFor="to-location" style={{ color: "black" }}>To Location</label>
+                <label htmlFor="to-location" style={{ color: "black" }}>
+                  To Location
+                </label>
                 <input
                   id="to-location"
                   style={{ color: "black" }}
                   type="text"
                   placeholder="Enter destination..."
-                  value={ToLocation}
+                  value={toLocation}
                   onChange={(e) => setToLocation(e.target.value)}
                   autoComplete="off"
                 />
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="btn-secondary" onClick={() => setShowLocationModal(false)}>Skip</button>
-                <button type="submit" className="btn-primary" onClick={handelStart}>Start Navigation</button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowLocationModal(false)}
+                >
+                  Skip
+                </button>
+                <button type="submit" className="btn-primary">
+                  Start Navigation
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
-      <button onClick={() => setShowLocationModal((prev) => !prev)}>Open</button>
-      {ShowInfo && <Mobileerror />}
-      {!position?.lat || !position?.lng ? (
+
+      {/* <button
+        className="route-btn"
+        onClick={() => setShowLocationModal((prev) => !prev)}
+      >
+        Route
+      </button> */}
+
+      {showInfo && <Mobileerror />}
+
+      {!position ? (
         <Loader loadername="Getting your Live Location..." />
       ) : (
         <HereMap
@@ -390,26 +296,36 @@ const App = () => {
           LONG={position.lng}
           accuracy={position.accuracy}
           markers={captures}
-          FromLocation={FromLocation}
-          ToLocation={ToLocation}
-          userAcceptedlivelatlong={userAcceptedlive ? position : ""}
+          FromLocation={resolvedFromLocation}
+          ToLocation={toLocation}
+          userAcceptedlivelatlong={userAcceptedLive ? position : null}
         />
       )}
 
       <div className={`status-box ${captures.length > 0 ? "danger" : ""}`}>
-        {captures.length === 0 ? "🚫 No potholes detected" : `🚧 ${captures.length} Pothole${captures.length > 1 ? "s" : ""} Detected`}
+        {captures.length === 0
+          ? "🚫 No potholes detected"
+          : `🚧 ${captures.length} Pothole${captures.length > 1 ? "s" : ""} Detected`}
       </div>
 
       {!isOnline && <div className="offline-banner">You are offline</div>}
 
       <ToastContainer />
 
-      {/* Camera Panel */}
       <div className="camera-panel">
         <CameraCapture onImage={handleImage} isOnline={isOnline} />
         <div className="camera-actions">
           <button onClick={uploadCaptured}>Upload</button>
-          <button onClick={() => setCapturedUrl(null)}>Clear</button>
+          <button
+            onClick={() => {
+              if (capturedUrl) {
+                URL.revokeObjectURL(capturedUrl);
+              }
+              setCapturedUrl(null);
+            }}
+          >
+            Clear
+          </button>
         </div>
         {error && <div className="error-text">{error}</div>}
       </div>

@@ -954,7 +954,12 @@ export default function CameraCapture({ isOnline = true, onImage }) {
   const [ShowInfo, setshowInfo] = useState(false)
 
   const isMobile = window.innerWidth <= 768;
-
+  /* ⛔ STOP */
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setIsRunning(false);
+  };
   /* ▶ START CAMERA */
   const startCamera = async () => {
     if (!isOnline) {
@@ -962,15 +967,18 @@ export default function CameraCapture({ isOnline = true, onImage }) {
       return;
     }
     const isMobile = localStorage.getItem("isuser_Mobile") === "true";
-    console.log(isMobile)
+    console.log(isMobile, "isMobile", !isMobile)
 
     // //     console.log(isMobile, "isMobile");
     // //     // ❌ Block desktop
-    if (isMobile) {
-      toast.info("Please use mobile view 📱", { position: "top-center" });
-      setshowInfo(true);
-      return
-    }
+    // if (!isMobile) {
+    //   toast.info("Please use mobile view 📱", { position: "top-center" });
+    //   setshowInfo(true);
+    //   return
+    // }
+    // else {
+    //   stopCamera()
+    // }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: facing },
@@ -987,12 +995,7 @@ export default function CameraCapture({ isOnline = true, onImage }) {
     }
   };
 
-  /* ⛔ STOP */
-  const stopCamera = () => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-    setIsRunning(false);
-  };
+
 
   /* 📸 CAPTURE */
   const capture = async () => {
@@ -1175,6 +1178,21 @@ export default function CameraCapture({ isOnline = true, onImage }) {
           </div>
 
           <div style={styles.controls}>
+            {/* {ShowInfo ?
+              <>
+                <button onClick={startCamera} disabled={isRunning} style={styles.btn}>
+                  ▶ Start
+                </button>
+
+                <button onClick={toggleFacing} style={styles.btn}>
+                  🔄 Flip
+                </button>
+                <button onClick={stopCamera} disabled={!isRunning} style={styles.btn}>
+                  ⛔ Stop
+                </button>
+              </>
+
+              : ""} */}
             <button onClick={startCamera} disabled={isRunning} style={styles.btn}>
               ▶ Start
             </button>
@@ -1182,10 +1200,10 @@ export default function CameraCapture({ isOnline = true, onImage }) {
             <button onClick={toggleFacing} style={styles.btn}>
               🔄 Flip
             </button>
-
             <button onClick={stopCamera} disabled={!isRunning} style={styles.btn}>
               ⛔ Stop
             </button>
+
 
             <button onClick={capture} disabled={!isRunning} style={styles.capture}>
               📸 Capture Photo
