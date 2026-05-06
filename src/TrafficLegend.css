@@ -1,28 +1,302 @@
+/* =========================================
+   TRAFFIC LEGEND
+========================================= */
+
 .traffic-legend {
   position: absolute;
+
   bottom: 20px;
-  left: 16px;
-  z-index: 1000;
-  background: white;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  left: 20px;
+
+  z-index: 999;
+
+  width: 290px;
+
+  padding: 18px;
+
+  border-radius: 24px;
+
+  background: rgba(15, 23, 42, 0.82);
+
+  backdrop-filter: blur(18px);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+
+  color: white;
+
+  font-family: "Inter", sans-serif;
 }
 
-.traffic-legend div {
+/* =========================================
+   HEADER
+========================================= */
+
+.legend-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.legend-title {
   display: flex;
   align-items: center;
-  margin-bottom: 4px;
+  gap: 10px;
+
+  font-size: 15px;
+  font-weight: 700;
 }
+
+/* =========================================
+   STATUS
+========================================= */
+
+.legend-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 12px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.legend-status.online {
+  background: rgba(22, 163, 74, 0.12);
+
+  color: #22c55e;
+
+  border: 1px solid rgba(22, 163, 74, 0.25);
+}
+
+.legend-status.offline {
+  background: rgba(239, 68, 68, 0.12);
+
+  color: #ef4444;
+
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+
+  animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================================
+   LEGEND ITEMS
+========================================= */
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 10px 12px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.legend-item:hover {
+  transform: translateX(4px);
+
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.legend-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.legend-value {
+  font-size: 11px;
+
+  opacity: 0.75;
+}
+
+/* =========================================
+   DOTS
+========================================= */
 
 .dot {
   width: 12px;
   height: 12px;
+
   border-radius: 50%;
-  margin-right: 6px;
+
+  flex-shrink: 0;
+
+  box-shadow: 0 0 12px currentColor;
 }
 
-.green { background: #2ecc71; }
-.orange { background: #f39c12; }
-.red { background: #e74c3c; }
+.green {
+  background: #22c55e;
+  color: #22c55e;
+}
+
+.yellow {
+  background: #facc15;
+  color: #facc15;
+}
+
+.orange {
+  background: #f97316;
+  color: #f97316;
+}
+
+.red {
+  background: #ef4444;
+  color: #ef4444;
+}
+
+/* =========================================
+   ANALYTICS
+========================================= */
+
+.legend-analytics {
+  margin-top: 18px;
+
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 12px;
+}
+
+.analytics-box {
+  display: flex;
+  gap: 10px;
+
+  padding: 12px;
+
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  align-items: center;
+}
+
+.analytics-box svg {
+  font-size: 20px;
+
+  opacity: 0.9;
+}
+
+.analytics-box span {
+  display: block;
+
+  font-size: 11px;
+
+  opacity: 0.7;
+
+  margin-bottom: 4px;
+}
+
+.analytics-box h4 {
+  margin: 0;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.legend-footer {
+  margin-top: 18px;
+
+  padding-top: 14px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 12px;
+
+  opacity: 0.75;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+  .traffic-legend {
+    width: calc(100% - 24px);
+
+    left: 12px;
+    right: 12px;
+
+    bottom: 12px;
+
+    padding: 16px;
+  }
+
+  .legend-analytics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .legend-title {
+    font-size: 13px;
+  }
+
+  .legend-item {
+    padding: 9px 10px;
+  }
+
+  .analytics-box h4 {
+    font-size: 16px;
+  }
+}

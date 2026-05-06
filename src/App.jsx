@@ -1,65 +1,144 @@
-import React, { useEffect, useRef, useState } from "react";
-import CameraCapture from "./CameraCapture";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
+
 import { ToastContainer, toast } from "react-toastify";
-import HereMap from "./HereMap";
+import "react-toastify/dist/ReactToastify.css";
+
 import Navbar from "./Navbar";
-import Mobileerror from "./Mobileerror";
 import Loader from "./Loader";
+import HereMap from "./HereMap";
+import CameraCapture from "./CameraCapture";
+import Mobileerror from "./Mobileerror";
 import MobileUseAlert from "./MobileUseAlert";
 
+const DEFAULT_LOCATION = {
+  lat: 12.9716,
+  lng: 77.5946,
+  accuracy: 5000,
+};
+
 const App = () => {
-  const [position, setPosition] = useState(null);
+  /* -------------------------------------------------------------------------- */
+  /*                                    STATE                                   */
+  /* -------------------------------------------------------------------------- */
+
+  const [position, setPosition] = useState(DEFAULT_LOCATION);
+
   const [error, setError] = useState(null);
-  const [capturedUrl, setCapturedUrl] = useState(null);
-  const [captures, setCaptures] = useState([]);
+
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [ShowInfo, setshowInfo] = useState(false);
+
+  const [showInfo, setShowInfo] = useState(false);
+
+  const [capturedUrl, setCapturedUrl] = useState(null);
+
+  const [obstacles, setObstacles] = useState([]);
+
+  const [selectedObstacle, setSelectedObstacle] = useState(null);
+
+  const [stats, setStats] = useState({
+    total: 0,
+    uploaded: 0,
+    detected: 0,
+  });
 
   const watchIdRef = useRef(null);
 
-  const DEFAULT_LOCATION = {
-    lat: 12.9716,
-    lng: 77.5946,
-  };
+  const [showCameraPanel, setShowCameraPanel] = useState(false);
+
+  const [showStatusPanel, setShowStatusPanel] = useState(true);
+
+  const [compactNavigation, setCompactNavigation] = useState(false);
+
+  /* -------------------------------------------------------------------------- */
+  /*                              GEOLOCATION HANDLER                           */
+  /* -------------------------------------------------------------------------- */
 
   const handleSuccess = (p) => {
-    setPosition({
+    const updatedPosition = {
       lat: p.coords.latitude,
       lng: p.coords.longitude,
       accuracy: p.coords.accuracy,
-    });
+      speed: p.coords.speed || 0,
+      heading: p.coords.heading || 0,
+    };
+
+    setPosition(updatedPosition);
+
+    setIsLoadingLocation(false);
+
+    setError(null);
   };
 
   const handleError = (err) => {
-    setError(err.message);
+    console.error(err);
+
+    setError(err.message || "Location unavailable");
+
+    setPosition(DEFAULT_LOCATION);
+
+    setIsLoadingLocation(false);
   };
 
-  /* 🌐 Online / Offline */
-  useEffect(() => {
-    const on = () => setIsOnline(true);
-    const off = () => setIsOnline(false);
+  /* -------------------------------------------------------------------------- */
+  /*                           ONLINE / OFFLINE LISTENER                        */
+  /* -------------------------------------------------------------------------- */
 
-    window.addEventListener("online", on);
-    window.addEventListener("offline", off);
+  useEffect(() => {
+    const goOnline = () => {
+      setIsOnline(true);
+
+      toast.success("Internet connected", {
+        position: "top-center",
+      });
+    };
+
+    const goOffline = () => {
+      setIsOnline(false);
+
+      toast.error("You are offline", {
+        position: "top-center",
+      });
+    };
+
+    window.addEventListener("online", goOnline);
+
+    window.addEventListener("offline", goOffline);
 
     return () => {
-      window.removeEventListener("online", on);
-      window.removeEventListener("offline", off);
+      window.removeEventListener("online", goOnline);
+
+      window.removeEventListener("offline", goOffline);
     };
   }, []);
 
-  /* 📍 Permission Watch */
+  /* -------------------------------------------------------------------------- */
+  /*                           LOCATION PERMISSION CHECK                        */
+  /* -------------------------------------------------------------------------- */
+
   useEffect(() => {
-    if (!navigator.permissions) return;
+    if (!navigator.permissions) {
+      requestLocation();
+      return;
+    }
 
     let permissionStatus = null;
 
-    const updatePermission = () => {
+    const handlePermission = () => {
       if (!permissionStatus) return;
 
       if (permissionStatus.state === "granted") {
         requestLocation();
+      }
+
+      if (permissionStatus.state === "denied") {
+        setError("Location permission denied");
+
+        setPosition(DEFAULT_LOCATION);
+
+        setIsLoadingLocation(false);
       }
     };
 
@@ -67,11 +146,13 @@ const App = () => {
       .query({ name: "geolocation" })
       .then((status) => {
         permissionStatus = status;
-        updatePermission();
-        permissionStatus.onchange = updatePermission;
+
+        handlePermission();
+
+        permissionStatus.onchange = handlePermission;
       })
       .catch(() => {
-        // ignore
+        requestLocation();
       });
 
     return () => {
@@ -81,42 +162,52 @@ const App = () => {
     };
   }, []);
 
-  /* 📍 Request Location */
+  /* -------------------------------------------------------------------------- */
+  /*                              REQUEST LOCATION                              */
+  /* -------------------------------------------------------------------------- */
+
   const requestLocation = () => {
     if (!navigator.geolocation) {
       setError("Geolocation not supported");
+
       setPosition(DEFAULT_LOCATION);
+
+      setIsLoadingLocation(false);
+
       return;
+    }
+
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
     }
 
     watchIdRef.current = navigator.geolocation.watchPosition(handleSuccess, handleError, {
       enableHighAccuracy: true,
-      timeout: 30000,
-      maximumAge: 5000,
+      timeout: 15000,
+      maximumAge: 0,
     });
   };
 
-  /* 📍 Live Location */
-  useEffect(() => {
-    requestLocation();
+  /* -------------------------------------------------------------------------- */
+  /*                                  CLEANUP                                   */
+  /* -------------------------------------------------------------------------- */
 
+  useEffect(() => {
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
-    };
-  }, []);
 
-  /* 🖼️ Cleanup Captured Blob URL */
-  useEffect(() => {
-    return () => {
       if (capturedUrl) {
         URL.revokeObjectURL(capturedUrl);
       }
     };
   }, [capturedUrl]);
 
-  /* 📷 Handle Camera Capture */
+  /* -------------------------------------------------------------------------- */
+  /*                               CAMERA HANDLING                              */
+  /* -------------------------------------------------------------------------- */
+
   const handleImage = (blob) => {
     if (!blob) return;
 
@@ -124,142 +215,239 @@ const App = () => {
       URL.revokeObjectURL(capturedUrl);
     }
 
-    setCapturedUrl(URL.createObjectURL(blob));
+    const localUrl = URL.createObjectURL(blob);
+
+    setCapturedUrl(localUrl);
   };
 
-  /* 📱 Mobile Check */
-  const isMobileAllowed = localStorage.getItem("isuser_Mobile") === "true";
+  /* -------------------------------------------------------------------------- */
+  /*                              OBSTACLE DETECTION                            */
+  /* -------------------------------------------------------------------------- */
 
-  /* ⬆️ Upload Image */
   const uploadCaptured = async () => {
+    const isMobileAllowed = localStorage.getItem("isuser_Mobile") === "true";
+
     if (!isMobileAllowed) {
-      setshowInfo(true);
+      setShowInfo(true);
       return;
     }
 
-    if (!capturedUrl || !position) {
+    if (!capturedUrl) {
       toast.info("Capture image first", {
         position: "top-center",
       });
+
+      return;
+    }
+
+    if (!position) {
+      toast.error("Location unavailable", {
+        position: "top-center",
+      });
+
       return;
     }
 
     try {
+      setStats((prev) => ({
+        ...prev,
+        uploaded: prev.uploaded + 1,
+      }));
+
       const blob = await fetch(capturedUrl).then((res) => res.blob());
 
       const formData = new FormData();
 
       formData.append("file", blob, "capture.jpg");
+
       formData.append("lat", String(position.lat));
+
       formData.append("lng", String(position.lng));
 
-      const res = await fetch("http://127.0.0.1:8000/api/pothole/detect/", {
+      const response = await fetch("http://127.0.0.1:8000/api/pothole/detect/", {
         method: "POST",
         body: formData,
       });
 
-      if (!res.ok) {
+      if (!response.ok) {
         throw new Error("Upload failed");
       }
 
-      const data = await res.json();
+      const data = await response.json();
 
       const detections = Array.isArray(data?.detections) ? data.detections : [];
 
-      setCaptures((prev) => [
-        ...prev,
-        {
-          pos: {
-            lat: position.lat,
-            lng: position.lng,
-          },
-          fileUrl: data?.url || null,
-          detections,
+      const obstacleData = {
+        id: Date.now(),
+
+        pos: {
+          lat: position.lat,
+          lng: position.lng,
         },
-      ]);
+
+        fileUrl: data?.url || capturedUrl,
+
+        detections,
+
+        createdAt: new Date().toISOString(),
+
+        severity: detections.length >= 3 ? "high" : detections.length >= 1 ? "medium" : "low",
+      };
+
+      setObstacles((prev) => [obstacleData, ...prev]);
+
+      setSelectedObstacle(obstacleData);
+
+      setStats((prev) => ({
+        total: prev.total + 1,
+        uploaded: prev.uploaded,
+        detected: prev.detected + detections.length,
+      }));
 
       if (detections.length === 0) {
-        toast.info("No potholes detected!", {
+        toast.info("No obstacles detected", {
           position: "top-center",
         });
       } else {
-        toast.success(`${detections.length} pothole(s) detected!`, {
+        toast.success(`${detections.length} obstacle(s) detected`, {
           position: "top-center",
         });
       }
 
-      if (capturedUrl) {
-        URL.revokeObjectURL(capturedUrl);
-      }
+      URL.revokeObjectURL(capturedUrl);
 
       setCapturedUrl(null);
     } catch (err) {
-      console.error("Upload failed:", err);
+      console.error(err);
 
-      toast.error("Upload failed!", {
+      toast.error("Upload failed", {
         position: "top-center",
       });
     }
   };
 
+  /* -------------------------------------------------------------------------- */
+  /*                                 DASHBOARD                                  */
+  /* -------------------------------------------------------------------------- */
+
+  const obstacleCountText = useMemo(() => {
+    if (obstacles.length === 0) {
+      return "No obstacles detected";
+    }
+
+    return `${obstacles.length} obstacle${obstacles.length > 1 ? "s" : ""} detected`;
+  }, [obstacles]);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                   RENDER                                   */
+  /* -------------------------------------------------------------------------- */
+
   return (
-    <>
+    <div className="app-root">
       <Navbar />
 
       <MobileUseAlert />
 
-      {ShowInfo && <Mobileerror />}
+      {showInfo && <Mobileerror />}
 
-      {/* 📊 Status Banner */}
-      {captures.length === 0 ? (
-        <div className="status-box">🚫 No potholes detected</div>
-      ) : (
-        <div className="status-box danger">
-          🚧 {captures.length} Pothole
-          {captures.length > 1 ? "s" : ""} Detected
+      {!isOnline && <div className="offline-banner">⚠️ You are offline</div>}
+
+      {/* ------------------------------------------------------------------ */}
+      {/*                             MAP SECTION                             */}
+      {/* ------------------------------------------------------------------ */}
+
+      <div className="map-wrapper">
+        {isLoadingLocation ? (
+          <Loader loadername="Getting your live location..." />
+        ) : (
+          <HereMap
+            LAT={position?.lat}
+            LONG={position?.lng}
+            accuracy={position?.accuracy}
+            markers={obstacles}
+            obstacles={obstacles}
+            currentObstacle={selectedObstacle}
+          />
+        )}
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/*                         SMART STATUS PANEL                          */}
+      {/* ------------------------------------------------------------------ */}
+
+      <div className="smart-status-panel">
+        <div className="status-card">
+          <span className="status-title">AI Navigation Status</span>
+
+          <span className="status-value">{obstacleCountText}</span>
         </div>
-      )}
 
-      {/* 🗺️ HERE MAP */}
-      {!position ? (
-        <Loader loadername="Getting your Live Location..." />
-      ) : (
-        <HereMap
-          LAT={position.lat}
-          LONG={position.lng}
-          accuracy={position.accuracy}
-          markers={captures}
-        />
-      )}
+        <div className="status-grid">
+          <div className="mini-status-card">
+            <span>Total Reports</span>
+            <strong>{stats.total}</strong>
+          </div>
 
-      {/* 🌐 Offline Banner */}
-      {!isOnline && <div className="offline-banner">You are offline</div>}
+          <div className="mini-status-card">
+            <span>AI Detections</span>
+            <strong>{stats.detected}</strong>
+          </div>
+
+          <div className="mini-status-card">
+            <span>GPS Accuracy</span>
+            <strong>{position?.accuracy ? `${Math.round(position.accuracy)}m` : "N/A"}</strong>
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/*                             CAMERA PANEL                           */}
+      {/* ------------------------------------------------------------------ */}
+
+      <button
+        className="floating-fab camera-fab"
+        onClick={() => setShowCameraPanel((prev) => !prev)}
+      >
+        {showCameraPanel ? "✕" : "📷"}
+      </button>
+
+      <div className={`floating-camera-panel ${showCameraPanel ? "camera-open" : "camera-closed"}`}>
+        {showCameraPanel && (
+          <>
+            <CameraCapture onImage={handleImage} isOnline={isOnline} />
+
+            <div className="camera-actions-modern">
+              <button className="primary-action-btn" onClick={uploadCaptured}>
+                Upload Detection
+              </button>
+
+              <button
+                className="secondary-action-btn"
+                onClick={() => {
+                  if (capturedUrl) {
+                    URL.revokeObjectURL(capturedUrl);
+                  }
+
+                  setCapturedUrl(null);
+                }}
+              >
+                Clear
+              </button>
+            </div>
+
+            {capturedUrl && (
+              <div className="preview-section">
+                <img src={capturedUrl} alt="Captured" className="preview-image" />
+              </div>
+            )}
+
+            {error && <div className="error-text-modern">{error}</div>}
+          </>
+        )}
+      </div>
 
       <ToastContainer />
-
-      {/* 📷 Camera Panel */}
-      <div className="camera-panel">
-        <CameraCapture onImage={handleImage} isOnline={isOnline} />
-
-        <div className="camera-actions">
-          <button onClick={uploadCaptured}>Upload</button>
-
-          <button
-            onClick={() => {
-              if (capturedUrl) {
-                URL.revokeObjectURL(capturedUrl);
-              }
-
-              setCapturedUrl(null);
-            }}
-          >
-            Clear
-          </button>
-        </div>
-
-        {error && <div className="error-text">{error}</div>}
-      </div>
-    </>
+    </div>
   );
 };
 

@@ -1,194 +1,622 @@
-/* =========================
-   Container (PWA overlay)
-========================= */
+/* =========================================
+   ROOT CONTAINER
+========================================= */
 .cam-container {
-  padding: 6px;
   width: 100%;
+  padding: 10px;
   box-sizing: border-box;
-}
-.status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 600;
-  background-color: #f5f5f5;
-  transition: all 0.3s ease;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  font-family: "Inter", sans-serif;
 }
 
-/* Green pulse animation */
-.running {
-  color: #16a34a;
-  animation: pulseGreen 1.5s infinite;
-}
-
-/* Red subtle glow */
-.stopped {
-  color: #dc2626;
-  animation: pulseRed 1.5s infinite;
-}
-
-@keyframes pulseGreen {
-  0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
-  70% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
-}
-
-@keyframes pulseRed {
-  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
-  70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-}
-/* =========================
-   Wrapper
-========================= */
+/* =========================================
+   GLASS CARD
+========================================= */
 .cam-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
+
   width: 100%;
+
+  padding: 12px;
+
+  border-radius: 24px;
+
+  background: rgba(255, 255, 255, 0.88);
+
+  backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.12),
+    0 2px 6px rgba(0, 0, 0, 0.06);
+
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
-/* =========================
-   Camera Box (SMALL)
-========================= */
+/* =========================================
+   AI STATUS BAR
+========================================= */
+.cam-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  transition: all 0.3s ease;
+
+  backdrop-filter: blur(10px);
+}
+
+/* =========================================
+   STATUS STATES
+========================================= */
+.running {
+  color: #16a34a;
+
+  background: rgba(22, 163, 74, 0.1);
+
+  border: 1px solid rgba(22, 163, 74, 0.25);
+
+  animation: pulseGreen 1.6s infinite;
+}
+
+.stopped {
+  color: #dc2626;
+
+  background: rgba(220, 38, 38, 0.08);
+
+  border: 1px solid rgba(220, 38, 38, 0.18);
+
+  animation: pulseRed 1.6s infinite;
+}
+
+.warning {
+  color: #d97706;
+
+  background: rgba(217, 119, 6, 0.08);
+
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+/* =========================================
+   PULSE ANIMATIONS
+========================================= */
+@keyframes pulseGreen {
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45);
+  }
+
+  70% {
+    box-shadow: 0 0 0 12px rgba(22, 163, 74, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+  }
+}
+
+@keyframes pulseRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45);
+  }
+
+  70% {
+    box-shadow: 0 0 0 12px rgba(220, 38, 38, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+/* =========================================
+   CAMERA VIEW
+========================================= */
 .cam-video-box {
-  width: 100%;
-  background: #111;
-  border-radius: 10px;
-  overflow: hidden;
   position: relative;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  border-radius: 24px;
+
+  background: #0f172a;
+
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* Video */
+/* =========================================
+   VIDEO
+========================================= */
 .cam-video,
 video {
   width: 100%;
-  height: 140px;          /* small camera preview */
-  object-fit: cover;
+  height: 240px;
+
   display: block;
+
+  object-fit: cover;
+
   background: #000;
-  border-radius: 6px;
+
+  border-radius: 24px;
 }
 
-/* Overlay text */
+/* =========================================
+   AI OVERLAY
+========================================= */
 .cam-overlay {
   position: absolute;
-  top: 6px;
-  left: 6px;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 4px 8px;
-  color: #fff;
-  border-radius: 6px;
-  font-size: 11px;
+
+  top: 14px;
+  left: 14px;
+
+  z-index: 20;
+
+  padding: 10px 14px;
+
+  border-radius: 16px;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  backdrop-filter: blur(12px);
+
+  color: white;
+
+  font-size: 12px;
+  line-height: 1.7;
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* =========================================
+   AI DETECTION BOX
+========================================= */
+.ai-detection-box {
+  position: absolute;
+
+  border: 3px solid #ef4444;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.2),
+    0 0 18px rgba(239, 68, 68, 0.5);
+
   pointer-events: none;
 }
 
-/* =========================
-   Controls (Compact)
-========================= */
+.ai-label {
+  position: absolute;
+
+  top: -32px;
+  left: 0;
+
+  padding: 6px 10px;
+
+  border-radius: 10px;
+
+  background: #ef4444;
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+/* =========================================
+   BOTTOM HUD
+========================================= */
+.cam-hud {
+  position: absolute;
+
+  bottom: 14px;
+  left: 14px;
+  right: 14px;
+
+  z-index: 20;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 10px;
+}
+
+/* =========================================
+   FPS + GPS
+========================================= */
+.cam-metrics {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.metric-chip {
+  padding: 8px 12px;
+
+  border-radius: 999px;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  backdrop-filter: blur(12px);
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* =========================================
+   BUTTONS ROW
+========================================= */
 .cam-controls {
   width: 100%;
 }
 
-/* Buttons row */
 .cam-btn-row {
   display: flex;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 10px;
+
+  flex-wrap: wrap;
 }
 
-/* Buttons */
+/* =========================================
+   BUTTONS
+========================================= */
 .cam-btn {
   flex: 1;
-  padding: 6px 8px;
-  font-size: 12px;
-  border: none;
-  border-radius: 6px;
-  background: #0066ff;
-  color: #ffffff;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s ease, transform 0.1s ease;
-}
 
-.cam-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  min-width: 120px;
+
+  padding: 12px 14px;
+
+  border: none;
+  outline: none;
+
+  border-radius: 16px;
+
+  cursor: pointer;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  color: white;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
 }
 
 .cam-btn:hover:not(:disabled) {
-  background: #0051cc;
+  transform: translateY(-2px);
+
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.35);
 }
 
 .cam-btn:active:not(:disabled) {
   transform: scale(0.96);
 }
 
-/* Status text */
+.cam-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   SPECIAL BUTTONS
+========================================= */
+.cam-btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+
+  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.28);
+}
+
+.cam-btn-success {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+
+  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.28);
+}
+
+.cam-btn-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.28);
+}
+
+/* =========================================
+   STATUS TEXT
+========================================= */
 .cam-status {
-  font-size: 11px;
-  margin-top: 4px;
-  color: #333;
+  margin-top: 6px;
+
+  font-size: 12px;
+  line-height: 1.6;
+
+  color: #475569;
 }
 
-/* =========================
-   Captured Preview
-========================= */
+/* =========================================
+   DETECTION ANALYTICS
+========================================= */
+.cam-analytics {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+
+  gap: 10px;
+}
+
+.analytics-card {
+  padding: 14px;
+
+  border-radius: 18px;
+
+  background: #f8fafc;
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  transition: transform 0.2s ease;
+}
+
+.analytics-card:hover {
+  transform: translateY(-2px);
+}
+
+.analytics-title {
+  font-size: 11px;
+  font-weight: 600;
+
+  color: #64748b;
+
+  margin-bottom: 8px;
+}
+
+.analytics-value {
+  font-size: 18px;
+  font-weight: 800;
+
+  color: #0f172a;
+}
+
+/* =========================================
+   CAPTURE LIST
+========================================= */
 .cam-capture-list {
-  max-height: 120px;   /* limit height */
+  max-height: 240px;
+
   overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  padding-right: 4px;
 }
 
-/* Empty state */
+/* =========================================
+   EMPTY STATE
+========================================= */
 .cam-empty {
-  font-size: 11px;
-  color: #666;
-  padding: 6px 0;
+  padding: 18px;
+
+  text-align: center;
+
+  border-radius: 18px;
+
+  background: #f8fafc;
+
+  color: #64748b;
+
+  font-size: 13px;
 }
 
-/* Capture item */
+/* =========================================
+   CAPTURE ITEM
+========================================= */
 .capture-item {
   display: flex;
+  gap: 12px;
+
   align-items: center;
-  gap: 6px;
-  padding: 4px 0;
+
+  padding: 10px;
+
+  border-radius: 18px;
+
+  background: rgba(248, 250, 252, 0.9);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-/* Captured image */
+.capture-item:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================
+   IMAGE
+========================================= */
 .capture-img {
-  width: 90px;
-  height: 60px;
+  width: 110px;
+  height: 72px;
+
   object-fit: cover;
-  border-radius: 6px;
+
+  border-radius: 14px;
+
   background: #000;
 }
 
-/* Remove button */
-.remove-btn {
-  padding: 4px 8px;
+/* =========================================
+   IMAGE DETAILS
+========================================= */
+.capture-details {
+  flex: 1;
+}
+
+.capture-title {
+  font-size: 13px;
+  font-weight: 700;
+
+  color: #0f172a;
+
+  margin-bottom: 4px;
+}
+
+.capture-meta {
   font-size: 11px;
-  background: #ff4444;
+
+  color: #64748b;
+
+  line-height: 1.6;
+}
+
+/* =========================================
+   REMOVE BUTTON
+========================================= */
+.remove-btn {
   border: none;
-  color: #ffffff;
-  border-radius: 6px;
+
+  padding: 8px 12px;
+
+  border-radius: 12px;
+
   cursor: pointer;
-  transition: background 0.2s ease;
+
+  background: #ef4444;
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  transition:
+    transform 0.15s ease,
+    background 0.2s ease;
 }
 
 .remove-btn:hover {
-  background: #cc0000;
+  background: #dc2626;
+
+  transform: scale(1.04);
 }
 
-/* =========================
-   Mobile PWA tweaks
-========================= */
-@media (max-width: 480px) {
+/* =========================================
+   CUSTOM SCROLLBAR
+========================================= */
+.cam-capture-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cam-capture-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+
+  border-radius: 999px;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+@media (max-width: 768px) {
   .cam-video,
   video {
-    height: 120px;
+    height: 220px;
+  }
+
+  .cam-btn {
+    min-width: unset;
+    font-size: 12px;
+  }
+
+  .cam-overlay {
+    font-size: 11px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+@media (max-width: 480px) {
+  .cam-container {
+    padding: 6px;
+  }
+
+  .cam-wrapper {
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .cam-video,
+  video {
+    height: 180px;
+    border-radius: 18px;
+  }
+
+  .cam-overlay {
+    top: 10px;
+    left: 10px;
+
+    padding: 8px 10px;
+
+    font-size: 10px;
+  }
+
+  .cam-btn-row {
+    gap: 8px;
   }
 
   .cam-btn {
     font-size: 11px;
-    padding: 6px;
+
+    padding: 10px;
+  }
+
+  .capture-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .capture-img {
+    width: 100%;
+    height: 140px;
+  }
+
+  .cam-hud {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

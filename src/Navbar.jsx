@@ -5,7 +5,6 @@ import { check_IsmobileView } from "./MiniDb";
 import { Link } from "react-router-dom";
 function Navbar({ page = "report" }) {
   const [active, setActive] = useState(page);
-  console.log(check_IsmobileView, "check_IsmobileView");
 
   const navStyle = {
     position: "fixed",

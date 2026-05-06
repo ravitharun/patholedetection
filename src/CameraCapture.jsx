@@ -1,1228 +1,832 @@
-// // // // src/CameraCapture.jsx
-// // // import React, { useRef, useState } from "react";
-// // // import "./CameraCapture.css";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import {
+  FaCamera,
+  FaSyncAlt,
+  FaVideo,
+  FaTimes,
+  FaExpand,
+  FaMapMarkerAlt,
+  FaWifi,
+  FaExclamationTriangle,
+  FaBolt,
+} from "react-icons/fa";
+
+/* =========================================
+   CONFIG
+========================================= */
+
+const AI_INTERVAL = 1800;
+
+const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
+  /* =========================================
+     REFS
+  ========================================= */
 
-// // // // export default function CameraCapture({
-// // // //   onUploadSuccess,
-// // // //   isOnline = true,
-// // // //   uploadUrl = "/api/upload",
-// // // // })
-
-
-
-
-// // // import React from 'react'
-
-// // // function CameraCapture() {
-// // //   async function startCamera() {
-// // //     const videoRef = useRef(null);
-// // //     const canvasRef = useRef(null);
-// // //     const streamRef = useRef(null);
-
-// // //     const [isRunning, setIsRunning] = useState(false);
-// // //     const [error, setError] = useState(null);
-// // //     const [facing, setFacing] = useState("environment");
-// // //     const [isUploading, setIsUploading] = useState(false);
-// // //     if (!isOnline) {
-// // //       alert("You are offline");
-// // //       return;
-// // //     }
-
-// // //     setError(null);
-// // //     try {
-// // //       const stream = await navigator.mediaDevices.getUserMedia({
-// // //         video: { facingMode: "environment" },
-// // //       });
-// // //       streamRef.current = stream;
-// // //       videoRef.current.srcObject = stream;
-// // //       await videoRef.current.play();
-// // //       setIsRunning(true);
-// // //     } catch {
-// // //       setError("Camera permission denied");
-// // //     }
-// // //   }
-
-// // //   function stopCamera() {
-// // //     if (streamRef.current) {
-// // //       streamRef.current.getTracks().forEach((t) => t.stop());
-// // //       streamRef.current = null;
-// // //     }
-// // //     setIsRunning(false);
-// // //   }
-
-// // //   async function capturePhoto() {
-// // //     const video = videoRef.current;
-// // //     const canvas = canvasRef.current;
-
-// // //     canvas.width = video.videoWidth;
-// // //     canvas.height = video.videoHeight;
-// // //   }
-// // //   async function captureAndUpload() {
-// // //     if (!videoRef.current) return;
-
-// // //     const canvas = canvasRef.current;
-// // //     canvas.width = videoRef.current.videoWidth;
-// // //     canvas.height = videoRef.current.videoHeight;
-
-// // //     const ctx = canvas.getContext("2d");
-// // //     ctx.drawImage(videoRef.current, 0, 0);
-
-// // //     const blob = await new Promise((res) =>
-// // //       canvas.toBlob(res, "image/jpeg", 0.85)
-// // //     );
-
-// // //     if (!isOnline) {
-// // //       setError("Offline: cannot upload");
-// // //       return;
-// // //     }
-
-
-
-// // //     const url = URL.createObjectURL(blob);
-
-// // //     setCaptures((prev) => [{ blob, url, timestamp: Date.now() }, ...prev]);
-
-// // //     // 🔥 SEND IMAGE TO PARENT (App.jsx)
-// // //     if (onImage) onImage(blob);
-// // //   }
-
-// // //   function toggleFacing() {
-// // //     setFacing((prev) => (prev === "environment" ? "user" : "environment"));
-// // //     if (isRunning) {
-// // //       stopCamera();
-// // //       setTimeout(startCamera, 300);
-// // //     }
-// // //   }
-
-// // //   const eventButtons = [
-// // //     { name: "Start", action: startCamera, disable: isRunning },
-// // //     { name: "Capture", action: capturePhoto, disable: !isRunning },
-// // //     { name: "Stop", action: stopCamera, disable: !isRunning },
-// // //     { name: "Flip", action: toggleFacing, disable: false },
-// // //   ];
-
-// // //   try {
-// // //     setIsUploading(true);
-// // //     const fd = new FormData();
-// // //     fd.append("photo", blob);
-
-// // //     const res = await fetch(uploadUrl, {
-// // //       method: "POST",
-// // //       body: fd,
-// // //     });
-
-// // //     if (!res.ok) throw new Error("Upload failed");
-
-// // //     const json = await res.json();
-// // //     onUploadSuccess?.(json);
-// // //   } catch (e) {
-// // //     setError(e.message);
-// // //   } finally {
-// // //     setIsUploading(false);
-// // //   }
-// // //   return (
-// // //     <>
-// // //       <div className="camera-root">
-// // //         <video ref={videoRef} className="camera-video" />
-
-// // //         <div className="camera-controls">
-// // //           <button
-// // //             className="camera-btn"
-// // //             onClick={startCamera}
-// // //             disabled={isRunning}
-// // //           >
-// // //             Start
-// // //           </button>
-
-// // //           <button
-// // //             className="camera-btn primary"
-// // //             onClick={captureAndUpload}
-// // //             disabled={!isRunning || isUploading}
-// // //           >
-// // //             {isUploading ? "Uploading…" : "Capture"}
-// // //           </button>
-
-// // //           {/* Controls */}
-// // //           <div className="cam-controls">
-// // //             <div className="cam-btn-row">
-// // //               {eventButtons.map((btn, i) => (
-// // //                 <button
-// // //                   key={i}
-// // //                   onClick={btn.action}
-// // //                   disabled={btn.disable}
-// // //                   className="cam-btn"
-// // //                 >
-// // //                   {btn.name}
-// // //                 </button>
-// // //               ))}
-// // //             </div>
-
-// // //             <div className="cam-status">
-// // //               <p><strong>Status:</strong> {isRunning ? "Running" : "Stopped"}</p>
-// // //               <p><strong>Error:</strong> {error ?? "None"}</p>
-// // //             </div>
-
-// // //             <div className="cam-capture-list">
-// // //               {captures.length === 0 && (
-// // //                 <div className="cam-empty">No captures yet</div>
-// // //               )}
-
-// // //               {captures.map((c, index) => (
-// // //                 <div className="capture-item" key={index}>
-// // //                   <img src={c.url} className="capture-img" alt="" />
-// // //                   <button
-// // //                     className="remove-btn"
-// // //                     onClick={() => {
-// // //                       URL.revokeObjectURL(c.url);
-// // //                       setCaptures((prev) =>
-// // //                         prev.filter((_, idx) => idx !== index)
-// // //                       );
-// // //                     }}
-// // //                   >
-// // //                     Remove
-// // //                   </button>
-// // //                 </div>
-// // //               ))}
-// // //             </div>
-// // //           </div>
-// // //           <button
-// // //             className="camera-btn"
-// // //             onClick={stopCamera}
-// // //             disabled={!isRunning}
-// // //           >
-// // //             Stop
-// // //           </button>
-// // //         </div >
-
-// // //         {error && <div className="camera-error">{error}</div>
-// // //         }
-
-// // //         <canvas ref={canvasRef} className="camera-canvas" />
-// // //       </div >
-
-// // //     </>
-// // //   )
-// // // }
-
-// // // export default CameraCapture
-// // import React, { useRef, useState } from "react";
-// // import "./CameraCapture.css";
-// // import { check_IsmobileView } from "./MiniDb";
-// // import Mobileerror from "./Mobileerror";
-// // import { toast } from "react-toastify";
-
-// // export default function CameraCapture({ onUploadSuccess, isOnline = true, uploadUrl = "/api/upload", onImage }) {
-// //   console.log({ onUploadSuccess, isOnline: true, uploadUrl: "/api/upload", onImage }, '{ onUploadSuccess, isOnline = true, uploadUrl = "/api/upload", onImage }')
-
-// //   const videoRef = useRef(null);
-// //   const canvasRef = useRef(null);
-// //   const streamRef = useRef(null);
-
-// //   const [isRunning, setIsRunning] = useState(false);
-// //   const [error, setError] = useState(null);
-// //   const [facing, setFacing] = useState("environment");
-// //   const [isUploading, setIsUploading] = useState(false);
-// //   const [captures, setCaptures] = useState([]);
-// //   const [showbtn, setbtn] = useState(false)
-// //   const [Check, setcheck] = useState(localStorage.getItem("isuser_Mobile"))
-// //   const [ShowInfo, setshowInfo] = useState(false)
-// //   // ✅ START CAMERA
-// //   async function startCamera() {
-// //     if (!isOnline) {
-// //       alert("You are offline");
-// //       return;
-// //     }
-
-// //     const isMobile = localStorage.getItem("isuser_Mobile") === "true";
-
-// //     console.log(isMobile, "isMobile");
-
-// //     // ❌ Block desktop
-//     if (!isMobile) {
-//       toast.info("Please use mobile view 📱", { position: "top-center" });
-//       setshowInfo(true);
-//       return
-//     }
-
-// //     // ✅ Allow mobile
-// //     setshowInfo(false);
-// //     setbtn(true);
-// //     setError(null);
-
-// //     try {
-// //       const stream = await navigator.mediaDevices.getUserMedia({
-// //         video: { facingMode: facing },
-// //       });
-
-// //       streamRef.current = stream;
-// //       videoRef.current.srcObject = stream;
-// //       await videoRef.current.play();
-
-// //       setIsRunning(true);
-// //     } catch {
-// //       setError("Camera permission denied");
-// //     }
-// //   }
-
-// //   // ✅ STOP CAMERA
-// //   function stopCamera() {
-// //     if (streamRef.current) {
-// //       streamRef.current.getTracks().forEach((t) => t.stop());
-// //       streamRef.current = null;
-// //     }
-// //     setIsRunning(false);
-// //     setbtn(0)
-// //   }
-
-// //   // ✅ CAPTURE + UPLOAD
-// //   async function captureAndUpload() {
-// //     if (!videoRef.current) return;
-
-// //     const canvas = canvasRef.current;
-// //     canvas.width = videoRef.current.videoWidth;
-// //     canvas.height = videoRef.current.videoHeight;
-
-// //     const ctx = canvas.getContext("2d");
-// //     ctx.drawImage(videoRef.current, 0, 0);
-
-// //     const blob = await new Promise((res) =>
-// //       canvas.toBlob(res, "image/jpeg", 0.85)
-// //     );
-
-// //     if (!isOnline) {
-// //       setError("Offline: cannot upload");
-// //       return;
-// //     }
-
-// //     const url = URL.createObjectURL(blob);
-// //     setCaptures((prev) => [{ blob, url }, ...prev]);
-
-// //     if (onImage) onImage(blob);
-
-// //     // ✅ Upload
-// //     try {
-// //       setIsUploading(true);
-
-// //       const fd = new FormData();
-// //       fd.append("photo", blob);
-
-// //       const res = await fetch(uploadUrl, {
-// //         method: "POST",
-// //         body: fd,
-// //       });
-
-// //       if (!res.ok) throw new Error("Upload failed");
-
-// //       const json = await res.json();
-// //       onUploadSuccess?.(json);
-// //     } catch (e) {
-// //       setError(e.message);
-// //     } finally {
-// //       setIsUploading(false);
-// //     }
-// //   }
-
-// //   function toggleFacing() {
-// //     setFacing((prev) => (prev === "environment" ? "user" : "environment"));
-// //     if (isRunning) {
-// //       stopCamera();
-// //       setTimeout(startCamera, 300);
-// //     }
-// //   }
-
-// //   const eventButtons = [
-// //     { name: "Start", action: startCamera, disable: isRunning },
-// //     // { name: "Stop", action: stopCamera, disable: !isRunning },
-// //     { name: "Capture", action: captureAndUpload, disable: !isRunning },
-// //     { name: "Flip", action: toggleFacing, disable: false },
-// //   ];
-
-// //   return (
-// //     <>
-// //       <div className="camera-root">
-// //         <video ref={videoRef} className="camera-video" />
-
-// //         <div className="camera-controls">
-// //           {/* <button onClick={startCamera} disabled={isRunning}>Start</button> */}
-
-// //           {/* <button onClick={captureAndUpload} disabled={!isRunning || isUploading}>
-// //             {isUploading ? "Uploading…" : "Capture"}
-// //           </button> */}
-
-// //           <div className="cam-btn-row">
-// //             {eventButtons.map((btn, i) => (
-// //               <>
-// //                 <button key={i} onClick={btn.action} disabled={btn.disable}>
-// //                   {btn.name}
-// //                 </button>
-
-// //               </>
-// //             ))}
-// //             {showbtn &&
-// //               <>
-// //                 <button onClick={stopCamera}>Stop</button>
-// //               </>
-// //             }
-// //           </div>
-
-// //           {/* <div style={{ display: "flex", gap: "12px" }}>
-// //             <p
-// //               style={{
-// //                 color: isRunning ? "green" : "red",
-// //                 backgroundColor: "#f5f5f5",
-// //                 padding: "6px 10px",
-// //                 borderRadius: "6px",
-// //                 fontWeight: "600"
-// //               }}
-// //             >
-// //               Status: {isRunning ? "Running" : "Stopped"}
-// //             </p>
-// //           </div> */}
-// //           <div style={{ display: "flex", gap: "12px" }}>
-// //             <p
-// //               className={`status-badge ${isRunning ? "running" : "stopped"
-// //                 }`}
-// //             >
-// //               Status: {isRunning ? "Camera Running" : "Camera Stopped"}
-// //             </p>
-// //           </div>
-// //           {error &&
-// //             <p
-// //               style={{
-// //                 color: error ? "crimson" : "gray",
-// //                 backgroundColor: "#f5f5f5",
-// //                 padding: "6px 10px",
-// //                 borderRadius: "6px",
-// //                 fontWeight: "500",
-// //                 marginTop: "6px",
-// //                 display: "inline-block"
-// //               }}
-// //             >
-// //               Error: {error ?? "None"}
-// //             </p>}
-// //           <br />
-// //           {captures.map((c, i) => (
-// //             <img key={i} src={c.url} width="100" alt="" />
-// //           ))}
-
-// //           <button onClick={stopCamera} disabled={!isRunning}>Stop</button>
-// //         </div>
-
-// //         <canvas ref={canvasRef} style={{ display: "none" }} />
-// //       </div>
-// //       {ShowInfo && <Mobileerror />}
-// //     </>
-// //   );
-// // }
-// // import React, { useRef, useState } from "react";
-// // import { toast } from "react-toastify";
-
-// // export default function CameraCapture({ isOnline = true, onImage }) {
-// //   const videoRef = useRef(null);
-// //   const canvasRef = useRef(null);
-// //   const streamRef = useRef(null);
-
-// //   const [isRunning, setIsRunning] = useState(false);
-// //   const [error, setError] = useState(null);
-// //   const [facing, setFacing] = useState("environment");
-// //   const [captures, setCaptures] = useState([]);
-// //   const [isUploading, setIsUploading] = useState(false);
-
-// //   const isMobile = window.innerWidth <= 768;
-
-// //   /* ▶️ START */
-// //   const startCamera = async () => {
-// //     if (!isOnline) {
-// //       toast.error("You are offline ❌");
-// //       return;
-// //     }
-// //     const isMobile = localStorage.getItem("isuser_Mobile") === "true";
-
-// //     console.log(isMobile, "isMobile");
-
-// //     // ❌ Block desktop
-// //     if (!isMobile) {
-// //       toast.info("Please use mobile view 📱", { position: "top-center" });
-// //       setshowInfo(true);
-// //       return
-// //     }
-// //     try {
-// //       const stream = await navigator.mediaDevices.getUserMedia({
-// //         video: { facingMode: facing },
-// //       });
-
-// //       streamRef.current = stream;
-// //       videoRef.current.srcObject = stream;
-// //       await videoRef.current.play();
-
-// //       setIsRunning(true);
-// //       setError(null);
-// //     } catch {
-// //       setError("Camera permission denied");
-// //     }
-// //   };
-
-// //   /* ⛔ STOP */
-// //   const stopCamera = () => {
-// //     streamRef.current?.getTracks().forEach((t) => t.stop());
-// //     streamRef.current = null;
-// //     setIsRunning(false);
-// //   };
-
-// //   /* 📸 CAPTURE */
-// //   const capture = async () => {
-// //     if (!videoRef.current) return;
-
-// //     const canvas = canvasRef.current;
-// //     canvas.width = videoRef.current.videoWidth;
-// //     canvas.height = videoRef.current.videoHeight;
-
-// //     const ctx = canvas.getContext("2d");
-// //     ctx.drawImage(videoRef.current, 0, 0);
-
-// //     const blob = await new Promise((res) =>
-// //       canvas.toBlob(res, "image/jpeg", 0.9)
-// //     );
-
-// //     const url = URL.createObjectURL(blob);
-// //     setCaptures((prev) => [{ blob, url }, ...prev]);
-
-// //     onImage?.(blob);
-// //   };
-
-// //   /* 🔄 FLIP CAMERA */
-// //   const toggleFacing = () => {
-// //     setFacing((prev) =>
-// //       prev === "environment" ? "user" : "environment"
-// //     );
-
-// //     if (isRunning) {
-// //       stopCamera();
-// //       setTimeout(startCamera, 300);
-// //     }
-// //   };
-
-// //   return (
-// //     <div style={styles.wrapper(isMobile)}>
-
-// //       {/* 🎥 VIDEO */}
-// //       <div style={styles.videoContainer}>
-// //         <video
-// //           ref={videoRef}
-// //           autoPlay
-// //           playsInline
-// //           muted
-// //           style={styles.video}
-// //         />
-
-// //         {/* STATUS BADGE */}
-// //         <div style={styles.status(isRunning)}>
-// //           {isRunning ? "🟢 Live" : "🔴 Off"}
-// //         </div>
-// //       </div>
-
-// //       {/* 🎛 CONTROLS */}
-// //       <div style={styles.controls(isMobile)}>
-
-// //         <button onClick={startCamera} disabled={isRunning} style={styles.btn}>
-// //           ▶ Start
-// //         </button>
-
-// //         <button
-// //           onClick={capture}
-// //           disabled={!isRunning}
-// //           style={styles.capture}
-// //         >
-// //           📸
-// //         </button>
-
-// //         <button onClick={toggleFacing} style={styles.btn}>
-// //           🔄
-// //         </button>
-
-// //         <button onClick={stopCamera} disabled={!isRunning} style={styles.btn}>
-// //           ⛔
-// //         </button>
-// //       </div>
-
-// //       {/* ⚠ ERROR */}
-// //       {error && <div style={styles.error}>{error}</div>}
-
-// //       {/* 📷 PREVIEW */}
-// //       {captures.length > 0 && (
-// //         <div style={styles.previewRow}>
-// //           {captures.map((c, i) => (
-// //             <img key={i} src={c.url} style={styles.previewImg} />
-// //           ))}
-// //         </div>
-// //       )}
-
-// //       <canvas ref={canvasRef} style={{ display: "none" }} />
-// //     </div>
-// //   );
-// // }
-
-// // /* 🎨 STYLES */
-// // const styles = {
-// //   wrapper: (isMobile) => ({
-// //     width: "100%",
-// //     background: "#fff",
-// //     borderRadius: isMobile ? "16px" : "20px",
-// //     padding: "10px",
-// //     boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-// //   }),
-
-// //   videoContainer: {
-// //     position: "relative",
-// //     width: "100%",
-// //     height: "230px",
-// //     borderRadius: "14px",
-// //     overflow: "hidden",
-// //     background: "#000",
-// //   },
-
-// //   video: {
-// //     width: "100%",
-// //     height: "100%",
-// //     objectFit: "cover",
-// //   },
-
-// //   status: (running) => ({
-// //     position: "absolute",
-// //     top: "10px",
-// //     right: "10px",
-// //     background: running ? "#22c55e" : "#ef4444",
-// //     color: "#fff",
-// //     padding: "4px 10px",
-// //     borderRadius: "10px",
-// //     fontSize: "12px",
-// //   }),
-
-// //   controls: (isMobile) => ({
-// //     display: "flex",
-// //     justifyContent: "space-around",
-// //     marginTop: "10px",
-// //     gap: "8px",
-// //   }),
-
-// //   btn: {
-// //     padding: "10px",
-// //     borderRadius: "10px",
-// //     border: "none",
-// //     background: "#e5e7eb",
-// //     cursor: "pointer",
-// //     flex: 1,
-// //   },
-
-// //   capture: {
-// //     flex: 1.2,
-// //     padding: "12px",
-// //     borderRadius: "50%",
-// //     background: "#2563eb",
-// //     color: "#fff",
-// //     fontSize: "18px",
-// //     border: "none",
-// //   },
-
-// //   error: {
-// //     color: "red",
-// //     marginTop: "6px",
-// //     textAlign: "center",
-// //   },
-
-// //   previewRow: {
-// //     display: "flex",
-// //     gap: "6px",
-// //     marginTop: "10px",
-// //     overflowX: "auto",
-// //   },
-
-// //   previewImg: {
-// //     width: "70px",
-// //     height: "70px",
-// //     borderRadius: "8px",
-// //     objectFit: "cover",
-// //   },
-// // };
-
-
-
-// import React, { useRef, useState } from "react";
-// import { toast } from "react-toastify";
-
-// export default function CameraCapture({ isOnline = true, onImage }) {
-//   const videoRef = useRef(null);
-//   const canvasRef = useRef(null);
-//   const streamRef = useRef(null);
-
-//   const [isRunning, setIsRunning] = useState(false);
-//   const [isOpen, setIsOpen] = useState(false); // ✅ OPEN/CLOSE
-//   const [error, setError] = useState(null);
-//   const [facing, setFacing] = useState("environment");
-//   const [captures, setCaptures] = useState([]);
-
-//   const isMobile = window.innerWidth <= 768;
-
-//   /* ▶ START CAMERA */
-//   const startCamera = async () => {
-//     if (!isOnline) {
-//       toast.error("You are offline ❌");
-//       return;
-//     }
-//     const isMobile = localStorage.getItem("isuser_Mobile") === "true";
-//     // 
-//     // console.log(isMobile, "isMobile");
-
-//     // ❌ Block desktop
-//     if (!isMobile) {
-//       toast.info("Please use mobile view 📱", { position: "top-center" });
-//       setshowInfo(true);
-//       return
-//     }
-//     try {
-//       const stream = await navigator.mediaDevices.getUserMedia({
-//         video: { facingMode: facing },
-//       });
-
-//       streamRef.current = stream;
-//       videoRef.current.srcObject = stream;
-//       await videoRef.current.play();
-
-//       setIsRunning(true);
-//       setError(null);
-//     } catch {
-//       setError("Camera permission denied");
-//     }
-//   };
-
-//   /* ⛔ STOP CAMERA */
-//   const stopCamera = () => {
-//     streamRef.current?.getTracks().forEach((t) => t.stop());
-//     streamRef.current = null;
-//     setIsRunning(false);
-//   };
-
-//   /* 📸 CAPTURE */
-//   const capture = async () => {
-//     if (!videoRef.current) return;
-
-//     const canvas = canvasRef.current;
-//     canvas.width = videoRef.current.videoWidth;
-//     canvas.height = videoRef.current.videoHeight;
-
-//     const ctx = canvas.getContext("2d");
-//     ctx.drawImage(videoRef.current, 0, 0);
-
-//     const blob = await new Promise((res) =>
-//       canvas.toBlob(res, "image/jpeg", 0.9)
-//     );
-
-//     const url = URL.createObjectURL(blob);
-//     setCaptures((prev) => [{ blob, url }, ...prev]);
-
-//     onImage?.(blob);
-//   };
-
-//   /* 🔄 FLIP */
-//   const toggleFacing = () => {
-//     setFacing((prev) =>
-//       prev === "environment" ? "user" : "environment"
-//     );
-
-//     if (isRunning) {
-//       stopCamera();
-//       setTimeout(startCamera, 300);
-//     }
-//   };
-
-//   /* 🔘 OPEN / CLOSE CAMERA */
-//   const toggleCameraPanel = () => {
-//     setIsOpen(!isOpen);
-
-//     if (isRunning) {
-//       stopCamera();
-//     }
-//   };
-//   const styles = {
-//     wrapper: (isMobile) => ({
-//       position: "fixed",
-//       bottom: isMobile ? "80px" : "20px",
-//       right: "20px",
-//       zIndex: 2000,
-//     }),
-
-//     openBtn: {
-//       padding: "12px 18px",
-//       borderRadius: "30px",
-//       background: "#2563eb",
-//       color: "#fff",
-//       border: "none",
-//       fontWeight: "600",
-//       cursor: "pointer",
-//       boxShadow: "0 6px 20px rgba(0,0,0,0.3)",
-//     },
-
-//     panel: {
-//       width: "260px",
-//       background: "#fff",
-//       borderRadius: "16px",
-//       padding: "10px",
-//       boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
-//       position: "relative",
-//     },
-
-//     closeBtn: {
-//       position: "absolute",
-//       top: "8px",
-//       right: "8px",
-//       zIndex: 10,
-//       border: "none",
-//       background: "rgba(0,0,0,0.6)",
-//       color: "#fff",
-//       borderRadius: "50%",
-//       width: "30px",
-//       height: "30px",
-//       cursor: "pointer",
-//       display: "flex",
-//       alignItems: "center",
-//       justifyContent: "center",
-//     },
-
-//     videoContainer: {
-//       width: "100%",
-//       height: "160px",
-//       borderRadius: "10px",
-//       overflow: "hidden",
-//       background: "#000",
-//     },
-
-//     video: {
-//       width: "100%",
-//       height: "100%",
-//       objectFit: "cover",
-//     },
-
-//     status: (run) => ({
-//       position: "absolute",
-//       top: "10px",
-//       right: "10px",
-//       background: run ? "#22c55e" : "#ef4444",
-//       color: "#fff",
-//       padding: "4px 8px",
-//       borderRadius: "10px",
-//       fontSize: "11px",
-//     }),
-
-//     controls: {
-//       display: "flex",
-//       justifyContent: "space-between",
-//       marginTop: "10px",
-//     },
-
-//     btn: {
-//       flex: 1,
-//       margin: "2px",
-//       padding: "8px",
-//       borderRadius: "8px",
-//       border: "none",
-//       background: "#e5e7eb",
-//       cursor: "pointer",
-//     },
-
-//     capture: {
-//       flex: 1.2,
-//       margin: "2px",
-//       borderRadius: "50%",
-//       background: "#2563eb",
-//       color: "#fff",
-//       border: "none",
-//       fontSize: "18px",
-//     },
-
-//     error: {
-//       color: "red",
-//       textAlign: "center",
-//       marginTop: "6px",
-//       fontSize: "12px",
-//     },
-
-//     previewRow: {
-//       display: "flex",
-//       gap: "5px",
-//       marginTop: "8px",
-//       overflowX: "auto",
-//     },
-
-//     previewImg: {
-//       width: "50px",
-//       height: "50px",
-//       borderRadius: "6px",
-//       objectFit: "cover",
-//     },
-//   };
-//   return (
-//     <div style={styles.wrapper(isMobile)}>
-
-//       {/* 🔘 OPEN BUTTON */}
-//       {!isOpen && (
-//         <button style={styles.openBtn} onClick={toggleCameraPanel}>
-//           📷 Open Camera
-//         </button>
-//       )}
-
-//       {/* CAMERA PANEL */}
-//       {isOpen && (
-//         <div style={styles.panel}>
-
-//           {/* CLOSE BTN */}
-//           <div style={{ position: "relative" }}>
-
-//             {/* 🎥 VIDEO */}
-//             <div style={styles.videoContainer}>
-//               <video
-//                 ref={videoRef}
-//                 autoPlay
-//                 playsInline
-//                 muted
-//                 style={styles.video}
-//               />
-
-//               {/* STATUS */}
-//               <div style={styles.status(isRunning)}>
-//                 {isRunning ? "🟢 Live" : "🔴 Off"}
-//               </div>
-//             </div>
-
-//             {/* ❌ CLOSE BUTTON (overlay) */}
-//             <button style={styles.closeBtn} onClick={toggleCameraPanel}>
-//               ✖
-//             </button>
-
-//           </div>
-
-//           {/* 🎛 BUTTONS */}
-//           <div style={styles.controls}>
-//             <button onClick={startCamera} disabled={isRunning} style={styles.btn}>
-//               ▶
-//             </button>
-
-//             <button onClick={capture} disabled={!isRunning} style={styles.capture}>
-//               📸
-//             </button>
-
-//             <button onClick={toggleFacing} style={styles.btn}>
-//               🔄
-//             </button>
-
-//             <button onClick={stopCamera} disabled={!isRunning} style={styles.btn}>
-//               ⛔
-//             </button>
-//           </div>
-
-//           {/* ERROR */}
-//           {error && <p style={styles.error}>{error}</p>}
-
-//           {/* PREVIEW */}
-//           {captures.length > 0 && (
-//             <div style={styles.previewRow}>
-//               {captures.map((c, i) => (
-//                 <img key={i} src={c.url} style={styles.previewImg} />
-//               ))}
-//             </div>
-//           )}
-//         </div>
-//       )}
-
-//       <canvas ref={canvasRef} style={{ display: "none" }} />
-//     </div>
-//   );
-// }
-import React, { useRef, useState } from "react";
-import { toast } from "react-toastify";
-
-
-export default function CameraCapture({ isOnline = true, onImage }) {
   const videoRef = useRef(null);
+
   const canvasRef = useRef(null);
+
+  const overlayCanvasRef = useRef(null);
+
   const streamRef = useRef(null);
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [error, setError] = useState(null);
-  const [facing, setFacing] = useState("environment");
-  const [captures, setCaptures] = useState([]);
-  const [ShowInfo, setshowInfo] = useState(false)
+  const detectionIntervalRef = useRef(null);
 
-  const isMobile = window.innerWidth <= 768;
-  /* ⛔ STOP */
-  const stopCamera = () => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-    setIsRunning(false);
-  };
-  /* ▶ START CAMERA */
+  /* =========================================
+     STATES
+  ========================================= */
+
+  const [cameraActive, setCameraActive] = useState(false);
+
+  const [capturedImage, setCapturedImage] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+
+  const [fullscreen, setFullscreen] = useState(false);
+
+  const [facingMode, setFacingMode] = useState("environment");
+
+  const [autoDetect, setAutoDetect] = useState(false);
+
+  const [gpsData, setGpsData] = useState(null);
+
+  const [fps, setFps] = useState(0);
+
+  const [backendStatus, setBackendStatus] = useState("ONLINE");
+
+  const [detections, setDetections] = useState([]);
+
+  const [aiState, setAiState] = useState("IDLE");
+
+  const [captureMode, setCaptureMode] = useState("SMART AI");
+
+  const [detectionCount, setDetectionCount] = useState(0);
+
+  const [severity, setSeverity] = useState("LOW");
+
+  const [confidence, setConfidence] = useState(0);
+
+  /* =========================================
+     GPS TRACKING
+  ========================================= */
+
+  useEffect(() => {
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        setGpsData({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          speed: ((pos.coords.speed || 0) * 3.6).toFixed(1),
+          heading: pos.coords.heading || 0,
+          accuracy: pos.coords.accuracy,
+        });
+      },
+      console.error,
+      {
+        enableHighAccuracy: true,
+      }
+    );
+
+    return () => navigator.geolocation.clearWatch(id);
+  }, []);
+
+  /* =========================================
+     START CAMERA
+  ========================================= */
+
   const startCamera = async () => {
-    if (!isOnline) {
-      toast.error("You are offline ❌");
-      return;
-    }
-    const isMobile = localStorage.getItem("isuser_Mobile") === "true";
-    console.log(isMobile, "isMobile", !isMobile)
-
-    // //     console.log(isMobile, "isMobile");
-    // //     // ❌ Block desktop
-    // if (!isMobile) {
-    //   toast.info("Please use mobile view 📱", { position: "top-center" });
-    //   setshowInfo(true);
-    //   return
-    // }
-    // else {
-    //   stopCamera()
-    // }
     try {
+      setLoading(true);
+
+      if (streamRef.current) {
+        stopCamera();
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing },
+        video: {
+          facingMode,
+
+          width: {
+            ideal: 1920,
+          },
+
+          height: {
+            ideal: 1080,
+          },
+
+          frameRate: {
+            ideal: 30,
+          },
+        },
+
+        audio: false,
       });
 
       streamRef.current = stream;
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
 
-      setIsRunning(true);
-      setError(null);
-    } catch {
-      setError("Camera permission denied");
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+
+      setCameraActive(true);
+
+      setBackendStatus("ONLINE");
+    } catch (err) {
+      console.error(err);
+
+      setBackendStatus("ERROR");
+
+      alert("Unable to access camera");
+    } finally {
+      setLoading(false);
     }
   };
 
+  /* =========================================
+     STOP CAMERA
+  ========================================= */
 
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
 
-  /* 📸 CAPTURE */
-  const capture = async () => {
-    if (!videoRef.current) return;
+      streamRef.current = null;
+    }
+
+    clearInterval(detectionIntervalRef.current);
+
+    setCameraActive(false);
+
+    setAutoDetect(false);
+  };
+
+  /* =========================================
+     SWITCH CAMERA
+  ========================================= */
+
+  const switchCamera = () => {
+    const nextMode = facingMode === "environment" ? "user" : "environment";
+
+    setFacingMode(nextMode);
+  };
+
+  useEffect(() => {
+    if (cameraActive) {
+      startCamera();
+    }
+  }, [facingMode]);
+
+  /* =========================================
+     CAPTURE IMAGE
+  ========================================= */
+
+  const captureImage = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
 
     const canvas = canvasRef.current;
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
+
+    canvas.width = video.videoWidth;
+
+    canvas.height = video.videoHeight;
 
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(videoRef.current, 0, 0);
 
-    const blob = await new Promise((res) =>
-      canvas.toBlob(res, "image/jpeg", 0.9)
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+
+        const preview = URL.createObjectURL(blob);
+
+        setCapturedImage(preview);
+
+        /* GPS + Metadata */
+        const metadata = {
+          gps: gpsData,
+
+          timestamp: new Date().toISOString(),
+
+          confidence,
+
+          severity,
+        };
+
+        onImage(blob, metadata);
+
+        simulateAiDetection();
+      },
+
+      "image/jpeg",
+
+      0.95
     );
+  }, [gpsData, confidence, severity, onImage]);
 
-    const url = URL.createObjectURL(blob);
-    setCaptures((prev) => [{ blob, url }, ...prev]);
+  /* =========================================
+     AUTO AI DETECTION
+  ========================================= */
 
-    onImage?.(blob);
+  const startAutoDetection = () => {
+    if (detectionIntervalRef.current) return;
+
+    setAutoDetect(true);
+
+    setAiState("SCANNING");
+
+    detectionIntervalRef.current = setInterval(() => {
+      captureImage();
+    }, AI_INTERVAL);
   };
 
-  /* 🔄 SWITCH CAMERA */
-  const toggleFacing = () => {
-    setFacing((prev) =>
-      prev === "environment" ? "user" : "environment"
-    );
+  const stopAutoDetection = () => {
+    clearInterval(detectionIntervalRef.current);
 
-    if (isRunning) {
-      stopCamera();
-      setTimeout(startCamera, 300);
+    detectionIntervalRef.current = null;
+
+    setAutoDetect(false);
+
+    setAiState("IDLE");
+  };
+
+  /* =========================================
+     SIMULATED AI OVERLAY
+  ========================================= */
+
+  const simulateAiDetection = () => {
+    const fakeDetection = {
+      x: Math.random() * 220 + 30,
+      y: Math.random() * 100 + 40,
+      width: 120,
+      height: 70,
+      label: "POTHOLE",
+      confidence: (Math.random() * 20 + 80).toFixed(1),
+    };
+
+    setConfidence(fakeDetection.confidence);
+
+    setDetectionCount((prev) => prev + 1);
+
+    const severityLevels = ["LOW", "MEDIUM", "HIGH"];
+
+    setSeverity(severityLevels[Math.floor(Math.random() * 3)]);
+
+    setDetections([fakeDetection]);
+
+    drawOverlay([fakeDetection]);
+  };
+
+  /* =========================================
+     DRAW AI OVERLAY
+  ========================================= */
+
+  const drawOverlay = (boxes) => {
+    const canvas = overlayCanvasRef.current;
+
+    const video = videoRef.current;
+
+    if (!canvas || !video) return;
+
+    canvas.width = video.clientWidth;
+
+    canvas.height = video.clientHeight;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    boxes.forEach((box) => {
+      ctx.strokeStyle = "#ef4444";
+
+      ctx.lineWidth = 4;
+
+      ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+      ctx.fillStyle = "#ef4444";
+
+      ctx.fillRect(box.x, box.y - 28, 140, 26);
+
+      ctx.fillStyle = "#ffffff";
+
+      ctx.font = "bold 14px sans-serif";
+
+      ctx.fillText(`${box.label} ${box.confidence}%`, box.x + 8, box.y - 10);
+    });
+  };
+
+  /* =========================================
+     FPS COUNTER
+  ========================================= */
+
+  useEffect(() => {
+    let frames = 0;
+
+    let last = performance.now();
+
+    const loop = () => {
+      frames++;
+
+      const now = performance.now();
+
+      if (now >= last + 1000) {
+        setFps(frames);
+
+        frames = 0;
+
+        last = now;
+      }
+
+      requestAnimationFrame(loop);
+    };
+
+    loop();
+  }, []);
+
+  /* =========================================
+     CLEAR PREVIEW
+  ========================================= */
+
+  const clearPreview = () => {
+    if (capturedImage) {
+      URL.revokeObjectURL(capturedImage);
     }
+
+    setCapturedImage(null);
+
+    setDetections([]);
   };
 
-  /* OPEN / CLOSE */
-  const toggleCameraPanel = () => {
-    setIsOpen(!isOpen);
-    if (isRunning) stopCamera();
-  };
+  /* =========================================
+     CLEANUP
+  ========================================= */
 
-  /* 🎨 STYLES */
-  const styles = {
-    wrapper: {
-      position: "fixed",
-      bottom: isMobile ? "80px" : "20px",
-      right: "20px",
-      zIndex: 2000,
-    },
+  useEffect(() => {
+    return () => {
+      stopCamera();
 
-    openBtn: {
-      padding: "12px 18px",
-      borderRadius: "30px",
-      background: "#2563eb",
-      color: "#fff",
-      border: "none",
-      fontWeight: "600",
-      cursor: "pointer",
-    },
+      if (capturedImage) {
+        URL.revokeObjectURL(capturedImage);
+      }
+    };
+  }, []);
 
-    panel: {
-      width: isMobile ? "90vw" : "300px",
-      maxWidth: "320px",
-      background: "#fff",
-      borderRadius: "16px",
-      padding: "12px",
-      boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
-    },
+  /* =========================================
+     STYLES
+  ========================================= */
 
-    videoContainer: {
-      position: "relative",
-      width: "100%",
-      height: "180px",
-      borderRadius: "10px",
-      overflow: "hidden",
-      background: "#000",
-    },
+  const glass = "rgba(255,255,255,0.12)";
 
-    video: {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-    },
-
-    status: (run) => ({
-      position: "absolute",
-      top: "10px",
-      right: "10px",
-      background: run ? "#22c55e" : "#ef4444",
-      color: "#fff",
-      padding: "4px 10px",
-      borderRadius: "12px",
-      fontSize: "12px",
-      fontWeight: "600",
-    }),
-
-    closeBtn: {
-      position: "absolute",
-      top: "10px",
-      left: "10px",
-      background: "rgba(0,0,0,0.6)",
-      color: "#fff",
-      border: "none",
-      borderRadius: "50%",
-      width: "32px",
-      height: "32px",
-      cursor: "pointer",
-    },
-
-    controls: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "8px",
-      marginTop: "12px",
-    },
-
-    btn: {
-      padding: "10px",
-      borderRadius: "10px",
-      border: "none",
-      background: "#e5e7eb",
-      cursor: "pointer",
-      fontSize: "13px",
-      fontWeight: "500",
-    },
-
-    capture: {
-      gridColumn: "span 2",
-      padding: "12px",
-      borderRadius: "12px",
-      background: "#2563eb",
-      color: "#fff",
-      border: "none",
-      fontWeight: "600",
-      cursor: "pointer",
-    },
-    // 62508a3d172396041522ba7a3eac6cd6
-    error: {
-      color: "red",
-      textAlign: "center",
-      marginTop: "6px",
-      fontSize: "12px",
-    },
-
-    previewRow: {
-      display: "flex",
-      gap: "6px",
-      marginTop: "10px",
-      overflowX: "auto",
-    },
-
-    previewImg: {
-      width: "60px",
-      height: "60px",
-      borderRadius: "8px",
-      objectFit: "cover",
-    },
-  };
+  /* =========================================
+     JSX
+  ========================================= */
 
   return (
-    <div style={styles.wrapper}>
-      {!isOpen && (
-        <button style={styles.openBtn} onClick={toggleCameraPanel}>
-          📷 Open Camera
-        </button>
-      )}
-      {/* <Toaster></Toaster> */}
-      {isOpen && (
-        <div style={styles.panel}>
-          <div style={{ position: "relative" }}>
-            <div style={styles.videoContainer}>
-              <video ref={videoRef} autoPlay playsInline muted style={styles.video} />
-              <div style={styles.status(isRunning)}>
-                {isRunning ? "🟢 Live" : "🔴 Off"}
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+      }}
+    >
+      {/* =====================================
+          STATUS BAR
+      ====================================== */}
+
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          flexWrap: "wrap",
+        }}
+      >
+        {[
+          {
+            icon: <FaWifi />,
+            label: backendStatus,
+          },
+
+          {
+            icon: <FaBolt />,
+            label: `${fps} FPS`,
+          },
+
+          {
+            icon: <FaMapMarkerAlt />,
+            label: gpsData ? "GPS LOCKED" : "NO GPS",
+          },
+
+          {
+            icon: <FaExclamationTriangle />,
+            label: `${detectionCount} DETECTIONS`,
+          },
+        ].map((item, i) => (
+          <div
+            key={i}
+            style={{
+              background: glass,
+              color: "white",
+              padding: "10px 16px",
+              borderRadius: "16px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              backdropFilter: "blur(12px)",
+              fontWeight: 700,
+              fontSize: "13px",
+            }}
+          >
+            {item.icon}
+            {item.label}
+          </div>
+        ))}
+      </div>
+
+      {/* =====================================
+          CAMERA VIEW
+      ====================================== */}
+
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: fullscreen ? "78vh" : "340px",
+          borderRadius: "28px",
+          overflow: "hidden",
+          background: "#0f172a",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.35)",
+        }}
+      >
+        {cameraActive ? (
+          <>
+            {/* VIDEO */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+
+            {/* AI OVERLAY */}
+            <canvas
+              ref={overlayCanvasRef}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                zIndex: 15,
+              }}
+            />
+
+            {/* TOP CONTROLS */}
+            <div
+              style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                display: "flex",
+                gap: "12px",
+                zIndex: 20,
+              }}
+            >
+              {[
+                {
+                  icon: <FaSyncAlt />,
+                  action: switchCamera,
+                },
+
+                {
+                  icon: <FaExpand />,
+                  action: () => setFullscreen((prev) => !prev),
+                },
+
+                {
+                  icon: <FaTimes />,
+                  action: stopCamera,
+                },
+              ].map((item, index) => (
+                <button
+                  key={index}
+                  onClick={item.action}
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "white",
+                    background: "rgba(255,255,255,0.14)",
+                    backdropFilter: "blur(12px)",
+                  }}
+                >
+                  {item.icon}
+                </button>
+              ))}
+            </div>
+
+            {/* AI HUD */}
+            <div
+              style={{
+                position: "absolute",
+                top: "18px",
+                left: "18px",
+                zIndex: 20,
+                color: "white",
+              }}
+            >
+              <div
+                style={{
+                  background: "rgba(0,0,0,0.45)",
+                  padding: "14px",
+                  borderRadius: "18px",
+                  backdropFilter: "blur(14px)",
+                  minWidth: "240px",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 800,
+                    fontSize: "16px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Smart AI Vision
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "13px",
+                    lineHeight: 1.8,
+                  }}
+                >
+                  AI State: {aiState}
+                  <br />
+                  Confidence: {confidence}%
+                  <br />
+                  Severity: {severity}
+                  <br />
+                  Mode: {captureMode}
+                </div>
               </div>
             </div>
 
-            <button style={styles.closeBtn} onClick={toggleCameraPanel}>
-              ✖
-            </button>
-          </div>
+            {/* BOTTOM CONTROLS */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "22px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                gap: "20px",
+                alignItems: "center",
+                zIndex: 20,
+              }}
+            >
+              {/* AUTO AI */}
+              <button
+                onClick={() => (autoDetect ? stopAutoDetection() : startAutoDetection())}
+                style={{
+                  padding: "14px 20px",
+                  borderRadius: "18px",
+                  border: "none",
+                  fontWeight: 700,
+                  color: "white",
+                  cursor: "pointer",
+                  background: autoDetect ? "#ef4444" : "#2563eb",
+                }}
+              >
+                {autoDetect ? "STOP AI" : "START AI"}
+              </button>
 
-          <div style={styles.controls}>
-            {/* {ShowInfo ?
-              <>
-                <button onClick={startCamera} disabled={isRunning} style={styles.btn}>
-                  ▶ Start
-                </button>
-
-                <button onClick={toggleFacing} style={styles.btn}>
-                  🔄 Flip
-                </button>
-                <button onClick={stopCamera} disabled={!isRunning} style={styles.btn}>
-                  ⛔ Stop
-                </button>
-              </>
-
-              : ""} */}
-            <button onClick={startCamera} disabled={isRunning} style={styles.btn}>
-              ▶ Start
-            </button>
-
-            <button onClick={toggleFacing} style={styles.btn}>
-              🔄 Flip
-            </button>
-            <button onClick={stopCamera} disabled={!isRunning} style={styles.btn}>
-              ⛔ Stop
-            </button>
-
-
-            <button onClick={capture} disabled={!isRunning} style={styles.capture}>
-              📸 Capture Photo
-            </button>
-          </div>
-
-          {error && <p style={styles.error}>{error}</p>}
-
-          {captures.length > 0 && (
-            <div style={styles.previewRow}>
-              {captures.map((c, i) => (
-                <img key={i} src={c.url} style={styles.previewImg} />
-              ))}
+              {/* CAPTURE */}
+              <button
+                onClick={captureImage}
+                style={{
+                  width: "82px",
+                  height: "82px",
+                  borderRadius: "50%",
+                  border: "5px solid rgba(255,255,255,0.9)",
+                  background: "#ef4444",
+                  cursor: "pointer",
+                  boxShadow: "0 12px 25px rgba(239,68,68,0.45)",
+                }}
+              />
             </div>
-          )}
+          </>
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "white",
+              textAlign: "center",
+              padding: "20px",
+            }}
+          >
+            <FaVideo size={52} />
+
+            <h2
+              style={{
+                marginTop: "20px",
+              }}
+            >
+              Smart Road AI Camera
+            </h2>
+
+            <p
+              style={{
+                maxWidth: "420px",
+                opacity: 0.8,
+                lineHeight: 1.7,
+              }}
+            >
+              Real-time pothole detection with GPS, AI overlays, analytics & intelligent road
+              monitoring.
+            </p>
+
+            <button
+              onClick={startCamera}
+              disabled={loading}
+              style={{
+                marginTop: "22px",
+                padding: "16px 24px",
+                borderRadius: "18px",
+                border: "none",
+                cursor: "pointer",
+                color: "white",
+                fontWeight: 700,
+                background: "linear-gradient(135deg,#2563eb,#1d4ed8)",
+              }}
+            >
+              {loading ? "Starting Camera..." : "Open AI Camera"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* =====================================
+          DETECTION PREVIEW
+      ====================================== */}
+
+      {capturedImage && (
+        <div
+          style={{
+            background: "rgba(255,255,255,0.96)",
+            borderRadius: "24px",
+            padding: "18px",
+            boxShadow: "0 14px 35px rgba(0,0,0,0.12)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "14px",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontWeight: 800,
+                  color: "#0f172a",
+                }}
+              >
+                AI Detection Result
+              </div>
+
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "#64748b",
+                  marginTop: "4px",
+                }}
+              >
+                Detection confidence: {confidence}%
+              </div>
+            </div>
+
+            <button
+              onClick={clearPreview}
+              style={{
+                border: "none",
+                background: "transparent",
+                color: "#ef4444",
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+            >
+              Remove
+            </button>
+          </div>
+
+          <img
+            src={capturedImage}
+            alt="Captured"
+            style={{
+              width: "100%",
+              height: "240px",
+              objectFit: "cover",
+              borderRadius: "18px",
+            }}
+          />
+
+          {/* ANALYTICS */}
+          <div
+            style={{
+              marginTop: "16px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+              gap: "14px",
+            }}
+          >
+            {[
+              {
+                title: "Severity",
+                value: severity,
+              },
+
+              {
+                title: "AI State",
+                value: aiState,
+              },
+
+              {
+                title: "GPS",
+                value: gpsData ? "LOCKED" : "NO SIGNAL",
+              },
+
+              {
+                title: "Internet",
+                value: isOnline ? "ONLINE" : "OFFLINE",
+              },
+            ].map((item, index) => (
+              <div
+                key={index}
+                style={{
+                  background: "#f8fafc",
+                  padding: "14px",
+                  borderRadius: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#64748b",
+                  }}
+                >
+                  <div>
+                    <strong>{item.title}</strong>
+
+                    <div
+                      style={{
+                        fontSize: 12,
+                        opacity: 0.7,
+                        marginTop: 2,
+                      }}
+                    >
+                      {item.address}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "6px",
+                    fontWeight: 700,
+                    color: "#0f172a",
+                  }}
+                >
+                  {item.value}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      {/* HIDDEN CANVAS */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: "none",
+        }}
+      />
     </div>
   );
-} 
+};
+
+export default CameraCapture;

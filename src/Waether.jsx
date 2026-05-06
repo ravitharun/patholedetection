@@ -1,370 +1,379 @@
-// import React, { useEffect, useState } from 'react'
-// import axios from "axios"
-// import Loader from './Loader'
-
-// function Waether({ lat }) {
-
-//     const [weatherLdin, setweatherldinghg] = useState(false)
-//     const [Weather, setWeather] = useState(null)
-
-//     useEffect(() => {
-//         const getWaether = async () => {
-//             const key = import.meta.env.VITE_WEATHER_API_KEY
-
-//             try {
-//                 setweatherldinghg(true)
-
-//                 const res = await axios.get(
-//                     `https://api.openweathermap.org/data/2.5/weather?lat=${lat.lat.toFixed(6)}&lon=${lat.lng.toFixed(6)}&appid=${key}&units=metric`
-//                 )
-
-//                 console.log(res.data, "data")
-//                 setWeather(res.data)
-
-//             } catch (error) {
-//                 console.log("error from weather", error)
-//             } finally {
-//                 setweatherldinghg(false)
-//             }
-//         }
-
-//         if (lat?.lat && lat?.lng) {
-//             getWaether()
-//         }
-//     }, [lat])
-
-//     const formatTime = (unix) => {
-//         return new Date(unix * 1000).toLocaleTimeString()
-//     }
-
-//     const styles = {
-//         page: {
-//             minHeight: "100vh",
-//             display: "flex",
-//             justifyContent: "center",
-//             alignItems: "center",
-//             padding: "20px",
-//             fontFamily: "sans-serif",
-//         },
-//         card: {
-//             width: "100%",
-//             maxWidth: "500px",
-//             borderRadius: "20px",
-//             padding: "20px",
-//             boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-//             border: "1px solid #eee",
-//         },
-//         header: {
-//             textAlign: "center",
-//             marginBottom: "20px",
-//         },
-//         city: {
-//             fontSize: "22px",
-//             fontWeight: "bold",
-//         },
-//         temp: {
-//             fontSize: "42px",
-//             fontWeight: "bold",
-//             margin: "10px 0",
-//         },
-//         desc: {
-//             textTransform: "capitalize",
-//             color: "#555",
-//         },
-//         section: {
-//             marginTop: "20px",
-//         },
-//         sectionTitle: {
-//             fontSize: "14px",
-//             fontWeight: "600",
-//             marginBottom: "10px",
-//             color: "#777",
-//         },
-//         grid: {
-//             display: "grid",
-//             gridTemplateColumns: "1fr 1fr",
-//             gap: "10px",
-//         },
-//         box: {
-//             padding: "10px",
-//             borderRadius: "10px",
-//             border: "1px solid #eee",
-//             fontSize: "14px",
-//         },
-//     }
-
-//     return (
-//         <>
-//             {weatherLdin && <Loader loadername="Fetching real-time weather..." />}
-
-//             <div style={styles.page}>
-
-//                 {/* Loader */}
-//                 {weatherLdin && <Loader loadername="Fetching weather..." />}
-
-//                 {/* Data UI */}
-//                 {!weatherLdin && Weather && (
-//                     <div style={styles.card}>
-
-//                         {/* Header */}
-//                         <div style={styles.header}>
-//                             <div style={styles.city}>
-//                                 {Weather?.name}, {Weather?.sys?.country}
-//                             </div>
-
-//                             <div style={styles.temp}>
-//                                 {Math.round(Weather?.main?.temp)}°C
-//                             </div>
-
-//                             <div style={styles.desc}>
-//                                 {Weather?.weather?.[0]?.description}
-//                             </div>
-//                         </div>
-
-//                         {/* Temperature */}
-//                         <div style={styles.section}>
-//                             <div style={styles.sectionTitle}>Temperature</div>
-//                             <div style={styles.grid}>
-//                                 <div style={styles.box}>Feels: {Weather?.main?.feels_like}°C</div>
-//                                 <div style={styles.box}>Min: {Weather?.main?.temp_min}°C</div>
-//                                 <div style={styles.box}>Max: {Weather?.main?.temp_max}°C</div>
-//                                 <div style={styles.box}>Pressure: {Weather?.main?.pressure}</div>
-//                             </div>
-//                         </div>
-
-//                         {/* Atmosphere */}
-//                         <div style={styles.section}>
-//                             <div style={styles.sectionTitle}>Atmosphere</div>
-//                             <div style={styles.grid}>
-//                                 <div style={styles.box}>Humidity: {Weather?.main?.humidity}%</div>
-//                                 <div style={styles.box}>Visibility: {Weather?.visibility} m</div>
-//                                 <div style={styles.box}>Sea Level: {Weather?.main?.sea_level}</div>
-//                                 <div style={styles.box}>Ground: {Weather?.main?.grnd_level}</div>
-//                             </div>
-//                         </div>
-
-//                         {/* Wind & Clouds */}
-//                         <div style={styles.section}>
-//                             <div style={styles.sectionTitle}>Wind & Clouds</div>
-//                             <div style={styles.grid}>
-//                                 <div style={styles.box}>Wind: {Weather?.wind?.speed} m/s</div>
-//                                 <div style={styles.box}>Direction: {Weather?.wind?.deg}°</div>
-//                                 <div style={styles.box}>Clouds: {Weather?.clouds?.all}%</div>
-//                                 <div style={styles.box}>Condition: {Weather?.weather?.[0]?.main}</div>
-//                             </div>
-//                         </div>
-
-//                         {/* Sun */}
-//                         <div style={styles.section}>
-//                             <div style={styles.sectionTitle}>Sun</div>
-//                             <div style={styles.grid}>
-//                                 <div style={styles.box}>
-//                                     Sunrise: {formatTime(Weather?.sys?.sunrise)}
-//                                 </div>
-//                                 <div style={styles.box}>
-//                                     Sunset: {formatTime(Weather?.sys?.sunset)}
-//                                 </div>
-//                             </div>
-//                         </div>
-
-//                         {/* Location */}
-//                         <div style={styles.section}>
-//                             <div style={styles.sectionTitle}>Location</div>
-//                             <div style={styles.grid}>
-//                                 <div style={styles.box}>Lat: {Weather?.coord?.lat}</div>
-//                                 <div style={styles.box}>Lon: {Weather?.coord?.lon}</div>
-//                                 <div style={styles.box}>Timezone: {Weather?.timezone}</div>
-//                             </div>
-//                         </div>
-
-//                     </div>
-//                 )}
-
-//             </div>
-//         </>
-//     )
-// }
-
-// export default Waether
-import React, { useEffect, useState } from 'react'
-import axios from "axios"
-import Loader from './Loader'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Loader from "./Loader";
 
 function Waether({ lat }) {
-    console.log(lat, 'latlatlat')
+  const [loading, setLoading] = useState(false);
 
-    const [loading, setLoading] = useState(false)
-    const [weather, setWeather] = useState(null)
-    const latitude = Number(lat?.lat)
-    const longitude = Number(lat?.lng)
-    useEffect(() => {
-        const getWeather = async () => {
-            const key = import.meta.env.VITE_WEATHER_API_KEY
+  const [weather, setWeather] = useState(null);
 
-            try {
-                setLoading(true)
+  const [error, setError] = useState(null);
 
-                const res = await axios.get(
-                    `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${key}&units=metric`
-                )
-// console.log((res),"resx")
-                setWeather(res.data)
+  const latitude = Number(lat?.lat);
 
-            } catch (err) {
-                console.log("error", err)
-            } finally {
-                setLoading(false)
-            }
-        }
+  const longitude = Number(lat?.lng);
 
-        if (lat?.lat && lat?.lng) {
-            getWeather()
-        }
-    }, [lat])
+  /* =========================
+     WEATHER FETCH
+  ========================= */
 
-    const formatTime = (unix) =>
-        new Date(unix * 1000).toLocaleTimeString()
+  useEffect(() => {
+    const getWeather = async () => {
+      try {
+        setLoading(true);
 
-    const styles = {
-        wrapper: {
-            display: "flex",
-            justifyContent: "center",
-            padding: "10px"
-        },
+        setError(null);
 
-        card: {
-            width: "100%",
-            maxWidth: "320px",
-            border: "1px solid #eaeaea",
-            borderRadius: "14px",
-            padding: "12px",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.03)", // very light shadow
-            background: "#fff", // clean white
-            fontFamily: "sans-serif",
-        },
+        const key = import.meta.env.VITE_WEATHER_API_KEY;
 
-        header: {
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "8px"
-        },
+        const res = await axios.get(
+          `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${key}&units=metric`
+        );
 
-        city: {
-            fontSize: "14px",
-            fontWeight: "600",
-            color: "#222"
-        },
+        setWeather(res.data);
+      } catch (err) {
+        console.log(err);
 
-        temp: {
-            fontSize: "24px",
-            fontWeight: "700",
-            color: "#111"
-        },
+        setError("Unable to fetch weather");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        desc: {
-            fontSize: "12px",
-            color: "#777",
-            textTransform: "capitalize",
-            marginBottom: "8px"
-        },
-
-        row: {
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "12px",
-            padding: "6px 0",
-            borderBottom: "1px solid #f5f5f5"
-        },
-
-        label: {
-            color: "#999"
-        },
-
-        value: {
-            fontWeight: "500",
-            color: "#333"
-        }
+    if (lat?.lat && lat?.lng) {
+      getWeather();
     }
+  }, [lat]);
 
-    return (
-        <div style={styles.wrapper}>
+  /* =========================
+     FORMATTERS
+  ========================= */
 
-            {loading && <Loader loadername="Fetching real-time weather..." />}
-            {loading ? <>
+  const formatTime = (unix) =>
+    new Date(unix * 1000).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
+  const getWeatherIcon = () => {
+    if (!weather) return "☀️";
 
-                <div> data Loading....</div>
-            </>:""}
-            {/* {weatherLdin && <Loader loadername="Fetching real-time weather..." />} */}
+    const main = weather.weather[0].main.toLowerCase();
 
-            {!loading && weather && (
-                <div style={styles.card}>
+    if (main.includes("clear")) return "☀️";
 
-                    {/* Header */}
-                    <div style={styles.header}>
-                        <div style={styles.city}>
-                            {weather.name}
-                        </div>
-                        <div style={styles.temp}>
-                            {Math.round(weather.main.temp)}°C
-                        </div>
-                    </div>
+    if (main.includes("cloud")) return "☁️";
 
-                    <div style={styles.desc}>
-                        {weather.weather[0].description}
-                    </div>
+    if (main.includes("rain")) return "🌧️";
 
-                    {/* FLEX ROW DATA */}
-                    <div style={styles.row}>
-                        <span style={styles.label}>Feels</span>
-                        <span style={styles.value}>{weather.main.feels_like}°C</span>
-                    </div>
+    if (main.includes("storm")) return "⛈️";
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>Humidity</span>
-                        <span style={styles.value}>{weather.main.humidity}%</span>
-                    </div>
+    if (main.includes("snow")) return "❄️";
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>Wind</span>
-                        <span style={styles.value}>{weather.wind.speed} m/s</span>
-                    </div>
+    return "🌤️";
+  };
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>Clouds</span>
-                        <span style={styles.value}>{weather.clouds.all}%</span>
-                    </div>
+  const getGradient = () => {
+    if (!weather) return styles.blue;
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>Pressure</span>
-                        <span style={styles.value}>{weather.main.pressure}</span>
-                    </div>
+    const main = weather.weather[0].main.toLowerCase();
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>Visibility</span>
-                        <span style={styles.value}>{weather.visibility}</span>
-                    </div>
+    if (main.includes("clear")) return styles.blue;
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>Sunrise</span>
-                        <span style={styles.value}>
-                            {formatTime(weather.sys.sunrise)}
-                        </span>
-                    </div>
+    if (main.includes("cloud")) return styles.gray;
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>Sunset</span>
-                        <span style={styles.value}>
-                            {formatTime(weather.sys.sunset)}
-                        </span>
-                    </div>
+    if (main.includes("rain")) return styles.dark;
 
-                </div>
-            )}
+    if (main.includes("storm")) return styles.black;
 
+    return styles.blue;
+  };
+
+  /* =========================
+     RENDER
+  ========================= */
+
+  return (
+    <div style={styles.wrapper}>
+      {loading && <Loader loadername="Fetching weather..." />}
+
+      {!loading && error && <div style={styles.error}>{error}</div>}
+
+      {!loading && weather && (
+        <div
+          style={{
+            ...styles.card,
+
+            background: getGradient(),
+          }}
+        >
+          {/* GLOW */}
+          <div style={styles.glow} />
+
+          {/* HEADER */}
+          <div style={styles.header}>
+            <div>
+              <div style={styles.location}>📍 {weather.name}</div>
+
+              <div style={styles.desc}>{weather.weather[0].description}</div>
+            </div>
+
+            <div style={styles.icon}>{getWeatherIcon()}</div>
+          </div>
+
+          {/* TEMP */}
+          <div style={styles.tempBlock}>
+            <div style={styles.temp}>{Math.round(weather.main.temp)}°</div>
+
+            <div style={styles.feels}>
+              Feels like {Math.round(weather.main.feels_like)}
+              °C
+            </div>
+          </div>
+
+          {/* CHIPS */}
+          <div style={styles.chips}>
+            <div style={styles.chip}>💧 {weather.main.humidity}%</div>
+
+            <div style={styles.chip}>🌬 {weather.wind.speed} m/s</div>
+
+            <div style={styles.chip}>☁ {weather.clouds.all}%</div>
+          </div>
+
+          {/* DETAILS */}
+          <div style={styles.details}>
+            <div style={styles.row}>
+              <span>🌅 Sunrise</span>
+
+              <span>{formatTime(weather.sys.sunrise)}</span>
+            </div>
+
+            <div style={styles.row}>
+              <span>🌇 Sunset</span>
+
+              <span>{formatTime(weather.sys.sunset)}</span>
+            </div>
+
+            <div style={styles.row}>
+              <span>👁 Visibility</span>
+
+              <span>{(weather.visibility / 1000).toFixed(1)} km</span>
+            </div>
+
+            <div style={styles.row}>
+              <span>🌡 Pressure</span>
+
+              <span>{weather.main.pressure} hPa</span>
+            </div>
+          </div>
+
+          {/* AI INSIGHT */}
+          <div style={styles.aiBox}>
+            🤖 AI Travel Insight
+            <div style={styles.aiText}>
+              {weather.weather[0].main === "Rain"
+                ? "Roads may be slippery. Potholes can be hidden by water."
+                : weather.main.temp > 35
+                  ? "Extreme heat detected. Stay hydrated during travel."
+                  : "Weather conditions look safe for navigation."}
+            </div>
+          </div>
         </div>
-    )
+      )}
+    </div>
+  );
 }
 
-export default Waether
+export default Waether;
+
+/* =========================
+   STYLES
+========================= */
+
+const styles = {
+  wrapper: {
+    width: "100%",
+
+    padding: "14px 14px 110px",
+
+    boxSizing: "border-box",
+  },
+
+  card: {
+    width: "100%",
+
+    borderRadius: "28px",
+
+    padding: "22px",
+
+    color: "#fff",
+
+    position: "relative",
+
+    overflow: "hidden",
+
+    boxSizing: "border-box",
+
+    boxShadow: "0 12px 40px rgba(0,0,0,0.24)",
+  },
+
+  glow: {
+    position: "absolute",
+
+    top: "-80px",
+
+    right: "-60px",
+
+    width: "220px",
+
+    height: "220px",
+
+    borderRadius: "50%",
+
+    background: "rgba(255,255,255,0.12)",
+  },
+
+  header: {
+    display: "flex",
+
+    justifyContent: "space-between",
+
+    alignItems: "center",
+
+    position: "relative",
+
+    zIndex: 2,
+  },
+
+  location: {
+    fontSize: "18px",
+
+    fontWeight: "700",
+  },
+
+  desc: {
+    marginTop: "6px",
+
+    fontSize: "13px",
+
+    opacity: 0.9,
+
+    textTransform: "capitalize",
+  },
+
+  icon: {
+    fontSize: "52px",
+  },
+
+  tempBlock: {
+    marginTop: "28px",
+
+    position: "relative",
+
+    zIndex: 2,
+  },
+
+  temp: {
+    fontSize: "72px",
+
+    fontWeight: "800",
+
+    lineHeight: 1,
+  },
+
+  feels: {
+    marginTop: "8px",
+
+    fontSize: "14px",
+
+    opacity: 0.85,
+  },
+
+  chips: {
+    display: "flex",
+
+    gap: "10px",
+
+    flexWrap: "wrap",
+
+    marginTop: "22px",
+  },
+
+  chip: {
+    background: "rgba(255,255,255,0.14)",
+
+    padding: "10px 14px",
+
+    borderRadius: "999px",
+
+    fontSize: "13px",
+
+    backdropFilter: "blur(12px)",
+  },
+
+  details: {
+    marginTop: "24px",
+
+    background: "rgba(255,255,255,0.1)",
+
+    borderRadius: "20px",
+
+    overflow: "hidden",
+  },
+
+  row: {
+    display: "flex",
+
+    justifyContent: "space-between",
+
+    padding: "16px",
+
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+
+    fontSize: "14px",
+  },
+
+  aiBox: {
+    marginTop: "24px",
+
+    background: "rgba(255,255,255,0.12)",
+
+    padding: "18px",
+
+    borderRadius: "20px",
+
+    fontWeight: "700",
+
+    lineHeight: 1.6,
+  },
+
+  aiText: {
+    marginTop: "10px",
+
+    fontWeight: "500",
+
+    fontSize: "14px",
+  },
+
+  error: {
+    background: "#ef4444",
+
+    color: "#fff",
+
+    padding: "14px",
+
+    borderRadius: "16px",
+
+    textAlign: "center",
+
+    fontWeight: "600",
+  },
+
+  blue: "linear-gradient(135deg,#2563eb,#1d4ed8)",
+
+  gray: "linear-gradient(135deg,#64748b,#475569)",
+
+  dark: "linear-gradient(135deg,#1e293b,#0f172a)",
+
+  black: "linear-gradient(135deg,#111827,#020617)",
+};

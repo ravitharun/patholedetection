@@ -1,67 +1,412 @@
-/* Root wrapper */
+/* =========================================
+   ROOT
+========================================= */
 .livemap-root {
   width: 100vw;
   height: 100vh;
   position: relative;
-  background: #f2f2f2;
   overflow: hidden;
+
+  background: #eef3f8;
+  font-family: "Inter", sans-serif;
 }
 
-/* Header bar */
+/* =========================================
+   TOP HEADER
+========================================= */
 .livemap-header {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 52px;
-  z-index: 1000;
 
-  background: #0b74de;
+  height: 68px;
+  z-index: 2000;
+
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(14px);
+
   color: #ffffff;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 0 14px;
-  font-size: 15px;
+  padding: 0 20px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.livemap-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.livemap-header p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* =========================================
+   LIVE STATUS
+========================================= */
+.live-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 16px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.4);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================================
+   CONTROLS
+========================================= */
+.map-controls {
+  position: absolute;
+  top: 82px;
+  left: 18px;
+
+  z-index: 1600;
+
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.control-btn {
+  border: none;
+  outline: none;
+
+  padding: 12px 18px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.92);
+
+  color: #111827;
+
+  font-size: 14px;
   font-weight: 600;
 
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+
+  backdrop-filter: blur(10px);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* Map container */
+.control-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.15),
+    0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.control-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* =========================================
+   STATS CARDS
+========================================= */
+.map-stats {
+  position: absolute;
+
+  top: 145px;
+  left: 18px;
+
+  z-index: 1500;
+
+  display: grid;
+  gap: 14px;
+
+  width: 240px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.94);
+
+  border-radius: 20px;
+
+  padding: 16px 18px;
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.12),
+    0 2px 6px rgba(0, 0, 0, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 16px 28px rgba(0, 0, 0, 0.16),
+    0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card span {
+  display: block;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  color: #6b7280;
+
+  margin-bottom: 8px;
+}
+
+.stat-card h3 {
+  margin: 0;
+
+  font-size: 28px;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+/* =========================================
+   MAP CONTAINER
+========================================= */
 .livemap-container {
   position: absolute;
-  top: 52px;
-  bottom: 0;
+
+  top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
 }
 
-/* Leaflet map full size */
+.leaflet-map,
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background: #ddd;
+
+  background: #dbeafe;
 }
 
-/* Make markers & overlays crisp */
+/* =========================================
+   LEAFLET CONTROLS
+========================================= */
+.leaflet-control-zoom {
+  border: none !important;
+
+  overflow: hidden;
+
+  border-radius: 18px !important;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+.leaflet-control-zoom a {
+  width: 42px !important;
+  height: 42px !important;
+
+  line-height: 42px !important;
+
+  font-size: 20px !important;
+
+  color: #111827 !important;
+
+  background: rgba(255, 255, 255, 0.96) !important;
+
+  transition: background 0.2s ease;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #eff6ff !important;
+}
+
+.leaflet-control-scale {
+  margin-bottom: 18px !important;
+  margin-left: 14px !important;
+}
+
+/* =========================================
+   POPUP
+========================================= */
+.popup-content {
+  min-width: 180px;
+}
+
+.popup-content h4 {
+  margin: 0 0 10px;
+
+  font-size: 16px;
+  color: #111827;
+}
+
+.popup-content p {
+  margin: 6px 0;
+
+  font-size: 13px;
+  color: #374151;
+}
+
+/* =========================================
+   MARKERS + OVERLAYS
+========================================= */
 .leaflet-marker-icon,
 .leaflet-marker-shadow {
   image-rendering: auto;
 }
 
-/* Traffic overlay polish */
 .leaflet-overlay-pane path {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-/* Mobile tweaks */
+/* =========================================
+   SCROLLBAR
+========================================= */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 999px;
+}
+
+/* =========================================
+   MOBILE RESPONSIVE
+========================================= */
+@media (max-width: 768px) {
+  .livemap-header {
+    height: 64px;
+    padding: 0 14px;
+  }
+
+  .livemap-header h2 {
+    font-size: 17px;
+  }
+
+  .livemap-header p {
+    font-size: 12px;
+  }
+
+  .map-controls {
+    top: 76px;
+    left: 12px;
+    right: 12px;
+
+    gap: 10px;
+  }
+
+  .control-btn {
+    flex: 1;
+    justify-content: center;
+
+    font-size: 13px;
+
+    padding: 10px 12px;
+  }
+
+  .map-stats {
+    top: auto;
+    bottom: 20px;
+
+    left: 12px;
+    right: 12px;
+
+    width: auto;
+
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-card {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .stat-card h3 {
+    font-size: 22px;
+  }
+
+  .live-status {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* =========================================
+   EXTRA SMALL DEVICES
+========================================= */
 @media (max-width: 480px) {
   .livemap-header {
-    font-size: 14px;
     padding: 0 10px;
+  }
+
+  .livemap-header h2 {
+    font-size: 15px;
+  }
+
+  .map-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat-card h3 {
+    font-size: 18px;
+  }
+
+  .control-btn {
+    font-size: 12px;
+    padding: 10px;
   }
 }

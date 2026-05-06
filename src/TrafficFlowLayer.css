@@ -1,48 +1,149 @@
-/* ================================
-   HERE Traffic Flow Layer
-   ================================ */
+/* =========================================
+   TRAFFIC PANE
+========================================= */
 
-/* Traffic pane itself */
 .leaflet-pane.traffic-data {
   z-index: 460;
-  pointer-events: none; /* let map interactions pass through */
 }
 
-/* All traffic polylines */
+/* =========================================
+   TRAFFIC POLYLINES
+========================================= */
+
 .leaflet-pane.traffic-data path {
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.35));
+
+  transition:
+    stroke 0.3s ease,
+    opacity 0.3s ease;
+
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.4));
 }
 
-/* Heavy congestion (red) */
-.leaflet-pane.traffic-data path[stroke="#e74c3c"] {
-  stroke-width: 7;
+/* =========================================
+   TRAFFIC HUD
+========================================= */
+
+.traffic-hud {
+  position: absolute;
+
+  top: 18px;
+  right: 18px;
+
+  z-index: 999;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
 }
 
-/* Medium congestion (orange) */
-.leaflet-pane.traffic-data path[stroke="#f39c12"] {
-  stroke-width: 6;
+/* =========================================
+   TRAFFIC CARD
+========================================= */
+
+.traffic-card {
+  min-width: 130px;
+
+  padding: 14px 16px;
+
+  border-radius: 20px;
+
+  background: rgba(15, 23, 42, 0.78);
+
+  backdrop-filter: blur(16px);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+
+  color: white;
 }
 
-/* Free flow (green) */
-.leaflet-pane.traffic-data path[stroke="#2ecc71"] {
-  stroke-width: 5;
-  opacity: 0.9;
+.traffic-card span {
+  display: block;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  opacity: 0.75;
+
+  margin-bottom: 6px;
 }
 
-/* Slight glow for visibility on light maps */
-@supports (filter: drop-shadow(0 0 2px black)) {
-  .leaflet-pane.traffic-data path {
-    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.4));
+.traffic-card h3 {
+  margin: 0;
+
+  font-size: 24px;
+  font-weight: 800;
+}
+
+/* =========================================
+   SEVERITY COLORS
+========================================= */
+
+.traffic-card.heavy {
+  border-left: 4px solid #ef4444;
+}
+
+.traffic-card.medium {
+  border-left: 4px solid #f97316;
+}
+
+.traffic-card.low {
+  border-left: 4px solid #22c55e;
+}
+
+/* =========================================
+   POPUP
+========================================= */
+
+.traffic-popup {
+  min-width: 200px;
+
+  font-family: "Inter", sans-serif;
+}
+
+.traffic-popup h3 {
+  margin: 0 0 10px;
+
+  color: #111827;
+
+  font-size: 16px;
+}
+
+.traffic-popup p {
+  margin: 6px 0;
+
+  font-size: 13px;
+
+  color: #374151;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+  .traffic-hud {
+    top: auto;
+    bottom: 18px;
+    right: 12px;
+
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    max-width: 90%;
   }
-}
 
-/* ================================
-   Mobile tweaks
-   ================================ */
-@media (max-width: 480px) {
-  .leaflet-pane.traffic-data path {
-    stroke-width: 5;
+  .traffic-card {
+    min-width: 100px;
+
+    padding: 12px;
+  }
+
+  .traffic-card h3 {
+    font-size: 18px;
   }
 }
