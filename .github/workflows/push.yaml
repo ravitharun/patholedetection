@@ -1,0 +1,33 @@
+name: push to main ci/cd
+on:
+    push:
+        branches:
+            - main
+            - Tree
+    pull_request:
+      branches:
+        - main
+        - Tree
+jobs:
+    UI:
+        runs-on: ubuntu-latest
+        env:
+            ProjectName: PatholedetectionProject
+        steps:
+            - name: Runner checking
+              run: echo "hi i am the runner"
+            - name: pull the code from github
+              uses: actions/checkout@v4
+            - name: node version
+              uses: actions/setup-node@v4
+              with: 
+                node-version: 20
+            - name: install the ui
+              run: npm install
+            #   working-directory: patholedetection
+
+            - name: run build command
+              run: npm run build
+            #   working-directory: patholedetection
+            - name: check the status
+              run: echo "all steps are completed $ProjectName"

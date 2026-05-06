@@ -1,0 +1,6 @@
+{
+  "appId": "com.sudh.traffic",
+  "appName": "Traffic Detection",
+  "webDir": "frontend",
+  "bundledWebRuntime": false
+}

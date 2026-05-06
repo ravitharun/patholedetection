@@ -1,0 +1,6 @@
+Django
+djangorestframework
+ultralytics
+opencv-python
+numpy
+pillow
