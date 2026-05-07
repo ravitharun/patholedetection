@@ -11,6 +11,8 @@ import {
   FaBolt,
 } from "react-icons/fa";
 
+import { API_BASE } from "./config/api";
+
 /* =========================================
    CONFIG
 ========================================= */
@@ -204,11 +206,10 @@ const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
 
       console.log("📤 Sending frame to backend...");
 
-      const response = await fetch("http://127.0.0.1:8000/api/ai/detect-frame/", {
+      const response = await fetch(`${API_BASE}/api/pothole/detect/`, {
         method: "POST",
         body: formData,
       });
-
       console.log("📡 Response received");
 
       console.log("📡 Status:", response.status);
