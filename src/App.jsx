@@ -11,6 +11,8 @@ import CameraCapture from "./CameraCapture";
 import Mobileerror from "./Mobileerror";
 import MobileUseAlert from "./MobileUseAlert";
 
+import { API_BASE } from "../ai_transport_backend/config/api";
+
 const DEFAULT_LOCATION = {
   lat: 12.9716,
   lng: 77.5946,
@@ -264,7 +266,7 @@ const App = () => {
 
       formData.append("lng", String(position.lng));
 
-      const response = await fetch("http://127.0.0.1:8000/api/pothole/detect/", {
+      const response = await fetch("http://${API_BASE}/api/pothole/detect/", {
         method: "POST",
         body: formData,
       });

@@ -46,7 +46,7 @@ def process_detection(file):
 
         # 🌐 Placeholder URL
         placeholder_url = (
-            "http://127.0.0.1:8000/api/pothole/media/placeholder.jpg"
+            f"{settings.BACKEND_URL}/api/pothole/media/placeholder.jpg"
         )
 
         return {

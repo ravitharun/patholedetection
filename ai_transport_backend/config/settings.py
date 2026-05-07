@@ -11,10 +11,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ========================
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
+
+BACKEND_URL = os.getenv(
+    "BACKEND_URL",
+    "https://smartroad-ai-uoep.onrender.com"
+)
+
 ALLOWED_HOSTS = [
+    "smartroad-ai-uoep.onrender.com",
     "localhost",
     "127.0.0.1",
-    ".onrender.com",
 ]
 
 # ========================
@@ -65,7 +71,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost",
     "capacitor://localhost",
 
-    "https://your-backend.onrender.com",
+    "https://smartroad-ai-uoep.onrender.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
