@@ -64,23 +64,42 @@ MIDDLEWARE = [
 # ========================
 # CORS SETTINGS
 # ========================
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
+#CORS_ALLOWED_ORIGINS = [
+   # "http://localhost:3000",
+    #"http://localhost:5173",
 
-    "http://localhost",
-    "https://localhost",
+    #"http://localhost",
+    #"https://localhost",
 
-    "capacitor://localhost",
+    #"capacitor://localhost",
 
-    "https://smartroad-ai-uoep.onrender.com",
-]
+    #"https://smartroad-ai-uoep.onrender.com",
+#]
+
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
 
     "https://*.onrender.com",
+]
+
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = [
+    "*",
+]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
 ]
 
 # ========================

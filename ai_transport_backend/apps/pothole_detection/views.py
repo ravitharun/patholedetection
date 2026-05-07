@@ -22,15 +22,17 @@ def test_api(request):
 
 
 # ✅ DETECTION API
-@api_view(['POST'])
+@api_view(['GET', 'POST', 'OPTIONS'])
 def detect_api(request):
+
+    if request.method == "OPTIONS":
+        return Response(status=200)
 
     file = request.FILES.get('file')
 
     if not file:
         return Response({"error": "No file uploaded"}, status=400)
 
-    # 🔥 TODO: Replace with your AI model call
     result = {
         "status": "success",
         "pothole_detected": True,
