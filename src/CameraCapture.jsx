@@ -108,7 +108,7 @@ const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: facingMode,
+          facingMode: { ideal: facingMode },
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
@@ -119,6 +119,8 @@ const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
       console.log("✅ Stream received:", stream);
 
       streamRef.current = stream;
+
+      console.log("📷 Active Camera:", facingMode);
 
       const video = videoRef.current;
 
@@ -632,6 +634,7 @@ const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
             autoPlay
             playsInline
             muted
+            key={facingMode}
             onCanPlay={() => {
               console.log("🎥 Video can play");
             }}
