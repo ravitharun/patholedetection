@@ -2,7 +2,6 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .services import process_detection
 from django.conf import settings
 from django.http import FileResponse, HttpResponse
 import os
@@ -28,15 +27,14 @@ def detect_api(request):
     if request.method == "OPTIONS":
         return Response(status=200)
 
+    # Lazy import for Render safety
+    from .services import process_detection
+
     file = request.FILES.get('file')
 
     if not file:
         return Response({"error": "No file uploaded"}, status=400)
 
-    result = {
-        "status": "success",
-        "pothole_detected": True,
-        "confidence": 0.87
-    }
+    result = process_detection(file)
 
     return JsonResponse(result)

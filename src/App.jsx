@@ -266,6 +266,8 @@ const App = () => {
 
       formData.append("lng", String(position.lng));
 
+      console.log("FULL API URL:", `${API_BASE}/api/pothole/detect/`);
+
       const response = await fetch(`${API_BASE}/api/pothole/detect/`, {
         method: "POST",
         body: formData,
