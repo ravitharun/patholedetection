@@ -11,7 +11,7 @@ import CameraCapture from "./CameraCapture";
 import Mobileerror from "./Mobileerror";
 import MobileUseAlert from "./MobileUseAlert";
 
-import { API_BASE } from "./config/api";
+import { API_BASE } from "../ai_transport_backend/config/api";
 
 const DEFAULT_LOCATION = {
   lat: 12.9716,

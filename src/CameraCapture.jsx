@@ -10,8 +10,7 @@ import {
   FaExclamationTriangle,
   FaBolt,
 } from "react-icons/fa";
-
-import { API_BASE } from "./config/api";
+import { API_BASE } from "../ai_transport_backend/config/api";
 
 /* =========================================
    CONFIG
