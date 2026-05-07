@@ -105,7 +105,7 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
 
   const [loader, setLoader] = useState(false);
   const [fromLocation, setFromLocation] = useState("");
-  const [toLocation, setToLocation] = useState("");
+  const [toLocation, setToLocation] = useState("Mumbai");
   const [currentAddress, setCurrentAddress] = useState("");
   const [routeInfo, setRouteInfo] = useState(null);
   const [selectedMode, setSelectedMode] = useState("car");
@@ -131,7 +131,7 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
   const [rerouteCountdown, setRerouteCountdown] = useState(null);
   const [fromCoords, setFromCoords] = useState(null);
   const [toCoords, setToCoords] = useState(null);
-
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const transportModes = [
     { value: "car", label: "🚗 Car" },
     { value: "bicycle", label: "🚴 Bike" },
@@ -149,7 +149,8 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
     try {
       /* PLATFORM */
       const platform = new window.H.service.Platform({
-        apikey: import.meta.env.VITE_HERE_API_KEY,
+        apikey:import.meta.env.VITE_HERE_API_KEY,
+        // apikey: 'lVeKhq5cGrsNrQjlzFmCeRdrNt-bvnJ4JXl5prNIJDw',
       });
 
       /* LAYERS */
@@ -580,10 +581,12 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
   const reverseGeocode = async (coords) => {
     try {
       const res = await axios.get(
-        `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${coords.lat},${coords.lng}&lang=en-US&apikey=${import.meta.env.VITE_HERE_API_KEY}`
+        `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${coords.lat},${coords.lng}&lang=en-US&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+        // `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${coords.lat},${coords.lng}&lang=en-US&apiKey=lVeKhq5cGrsNrQjlzFmCeRdrNt-bvnJ4JXl5prNIJDw`
       );
       const label = res.data?.items?.[0]?.address?.label || `${coords.lat}, ${coords.lng}`;
       setCurrentAddress(label);
+      console.log("res reverseGeocode ", res)
       setFromLocation((p) => p || label);
     } catch {
       const fb = `${coords.lat}, ${coords.lng}`;
@@ -606,7 +609,7 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
           query
         )}&limit=8&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
       );
-
+      console.log(res, 'res searchLocationSuggestions')
       const formatted = (res.data?.items || []).map((item) => ({
         title: item.title || item.address?.label || "Unknown",
 
@@ -643,8 +646,9 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
     try {
       setLoader(true);
       const res = await axios.get(
-        `https://router.hereapi.com/v8/routes?transportMode=${selectedMode}&origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}&return=polyline,summary,actions,instructions&apikey=${import.meta.env.VITE_HERE_API_KEY}`
+        `https://router.hereapi.com/v8/routes?transportMode=car&origin=12.89869,77.5724&destination=12.54348,77.42181&return=polyline,summary,actions,instructions&apikey=${import.meta.env.VITE_HERE_API_KEY}`
       );
+      console.log(res, 'resresres')
       const route = res.data?.routes?.[0];
       if (!route) {
         toast.error("No route found");
@@ -718,6 +722,21 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
     resetMapTilt();
   };
 
+  const speak = (text) => {
+    if (!voiceEnabled || !text) return;
+
+    const speech = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(speech);
+  };
+
+  const toggleVoice = () => {
+    if (voiceEnabled) {
+      // stop current speaking immediately
+      window.speechSynthesis.cancel();
+    }
+
+    setVoiceEnabled(!voiceEnabled);
+  };
   useEffect(() => {
     if (!markerGroupRef.current || !window.H) return;
     markerGroupRef.current.removeAll();
@@ -753,6 +772,15 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
   /* ─────────────────────────────────────────────────────────────────────────
      RENDER
   ───────────────────────────────────────────────────────────────────────── */
+
+  useEffect(() => {
+    if (currentInstruction) {
+      speak(currentInstruction);
+    } else if (nextInstruction) {
+      speak(nextInstruction);
+    }
+  }, [currentInstruction, nextInstruction]);
+
   return (
     <div className="smart-map-layout">
       {loader && <Loader loadername="Calculating smart route..." />}
@@ -787,7 +815,7 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
         >
           <div className="search-card">
             <div className="top-panel-header">
-              <strong>Smart Navigation</strong>
+              <strong>Smart Navigation </strong>
               <button className="panel-toggle-btn" onClick={() => setCompactTopBar((p) => !p)}>
                 {compactTopBar ? "⬇" : "⬆"}
               </button>
@@ -975,6 +1003,9 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
         >
           🧭
         </button>
+        <button onClick={toggleVoice}>
+          {voiceEnabled ? "🔊 Voice ON" : "🔇 Voice OFF"}
+        </button>
       </div>
 
       {/* HERE Map canvas */}
@@ -1012,7 +1043,11 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
                     setNavigationViewMode("navigate");
                     setShowNavigationPanel(false);
                     tiltMapForNavigation();
-                    toast.success("Trip started 🚀");
+
+                    // setTimeout(() => {
+                    //   speak("YourLive Location is in  " + currentInstruction)
+                    // }, 5000);
+
                   }}
                 >
                   Start Trip
@@ -1052,9 +1087,9 @@ const HereMap = ({ markers = [], obstacles = [] }) => {
         <>
           {/* TOP GREEN INSTRUCTION BANNER */}
           <div style={S.topBanner}>
-            <div style={S.bannerArrow}>{dirIcon(currentInstruction)}</div>
+            <div style={S.bannerArrow} title={currentInstruction}>{dirIcon(currentInstruction)}</div>
             <div style={S.bannerText}>
-              <div style={S.bannerMain}>{currentInstruction || "Continue straight"}</div>
+              <div style={S.bannerMain} title={currentInstruction}>{currentInstruction || "Continue straight"}</div>
               {nextInstruction && (
                 <div style={S.bannerSub}>
                   Then <span style={S.thenArrow}>{dirIcon(nextInstruction)}</span> {nextInstruction}
