@@ -1,6 +1,0 @@
-{
-  "appId": "com.svs.smartroadai",
-  "appName": "Smart Road AI",
-  "webDir": "dist",
-  "bundledWebRuntime": false
-}

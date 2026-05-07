@@ -38,6 +38,7 @@ function Addnearby() {
   useEffect(() => {
     if (!navigator.geolocation) {
       setGpsStatus("GPS not supported");
+      setLoading(false);
       return;
     }
 
@@ -50,6 +51,9 @@ function Addnearby() {
         });
 
         setGpsStatus("GPS Locked");
+
+        // IMPORTANT
+        setLoading(false);
       },
 
       (err) => {
@@ -71,6 +75,15 @@ function Addnearby() {
           default:
             setError("Unknown GPS error");
         }
+
+        // IMPORTANT
+        setLoading(false);
+
+        // Optional fallback location
+        setPosition({
+          lat: 12.9716,
+          lng: 77.5946,
+        });
       },
 
       {

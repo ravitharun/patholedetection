@@ -99,14 +99,3 @@ app/src/main/assets/public
 app/src/main/assets/capacitor.config.json
 app/src/main/assets/capacitor.plugins.json
 app/src/main/res/xml/config.xml
-node_modules/
-venv/
-venv310/
-media/
-uploads/
-dist/
-dev-dist/
-__pycache__/
-*.pyc
-*.pt
-.env

@@ -131,7 +131,7 @@ const App = () => {
     const handlePermission = () => {
       if (!permissionStatus) return;
 
-      if (permissionStatus.state === "granted") {
+      if (permissionStatus.state === "granted" || permissionStatus.state === "prompt") {
         requestLocation();
       }
 
@@ -266,7 +266,7 @@ const App = () => {
 
       formData.append("lng", String(position.lng));
 
-      const response = await fetch("http://${API_BASE}/api/pothole/detect/", {
+      const response = await fetch(`${API_BASE}/api/pothole/detect/`, {
         method: "POST",
         body: formData,
       });

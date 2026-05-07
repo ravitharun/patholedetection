@@ -69,6 +69,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 
     "http://localhost",
+    "https://localhost",
+
     "capacitor://localhost",
 
     "https://smartroad-ai-uoep.onrender.com",
