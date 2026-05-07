@@ -16,4 +16,6 @@ urlpatterns = [
 
     # Notification APIs
     path('api/notify/', include('apps.notifications.urls')),
+    #ai detection APIs
+    path("api/ai/",include("apps.ai_detection.urls"))
 ]
