@@ -14,11 +14,11 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 BACKEND_URL = os.getenv(
     "BACKEND_URL",
-    "https://smartroad-ai-uoep.onrender.com"
+    "https://smartroad-ai-sqkm.onrender.com",
 )
 
 ALLOWED_HOSTS = [
-    "smartroad-ai-uoep.onrender.com",
+    "smartroad-ai-sqkm.onrender.com",
     "localhost",
     "127.0.0.1",
 ]
