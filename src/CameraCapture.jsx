@@ -190,16 +190,26 @@ const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
   }, [facingMode]);
 
   /* =========================================
-     CAPTURE IMAGE
+     SEND FRAME TO BACKEND
+     Backend returns a flat array:
+     [ { label, confidence, bbox: [x1,y1,x2,y2] }, ... ]
   ========================================= */
 
   const sendFrameToBackend = async (blob) => {
     try {
       setAiState("PROCESSING");
 
+      if (!blob || blob.size === 0) {
+        console.error("❌ Empty blob, skipping send");
+        setAiState("ERROR: empty frame");
+        return;
+      }
+
+      console.log("✅ Blob size:", blob.size, "type:", blob.type);
+
       const formData = new FormData();
 
-      formData.append("image", blob, "frame.jpg");
+      formData.append("file", blob, "frame.jpg");
 
       formData.append("mode", "all");
 
@@ -209,87 +219,34 @@ const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
         method: "POST",
         body: formData,
       });
-      console.log("📡 Response received");
 
+      console.log("📡 Response received");
       console.log("📡 Status:", response.status);
 
       const data = await response.json();
 
-      console.log("🧠 AI RESPONSE:", data);
+      console.log("🧠 RAW RESPONSE:", JSON.stringify(data));
 
-      if (!data.success) {
-        setAiState("ERROR");
-
+      // Backend returns error object
+      if (!response.ok || data.error) {
+        setAiState("ERROR: " + (data.error || response.status));
+        setBackendStatus("ERROR");
         return;
       }
 
-      const mergedDetections = [];
+      // Backend returns a flat array of detections
+      // e.g. [ { label: "pothole", confidence: 0.91, bbox: [x1,y1,x2,y2] } ]
+      const rawList = Array.isArray(data) ? data : [];
 
-      /* =========================
-       POTHOLES
-    ========================= */
-
-      data.detections.potholes.forEach((item) => {
-        mergedDetections.push({
-          x: item.bbox[0],
-
-          y: item.bbox[1],
-
-          width: item.bbox[2] - item.bbox[0],
-
-          height: item.bbox[3] - item.bbox[1],
-
-          label: item.label.toUpperCase(),
-
-          confidence: (item.confidence * 100).toFixed(1),
-
-          type: "pothole",
-        });
-      });
-
-      /* =========================
-       LANES
-    ========================= */
-
-      data.detections.lanes.forEach((item) => {
-        mergedDetections.push({
-          x: item.bbox[0],
-
-          y: item.bbox[1],
-
-          width: item.bbox[2] - item.bbox[0],
-
-          height: item.bbox[3] - item.bbox[1],
-
-          label: item.label.toUpperCase(),
-
-          confidence: (item.confidence * 100).toFixed(1),
-
-          type: "lane",
-        });
-      });
-
-      /* =========================
-       SIGNALS
-    ========================= */
-
-      data.detections.signals.forEach((item) => {
-        mergedDetections.push({
-          x: item.bbox[0],
-
-          y: item.bbox[1],
-
-          width: item.bbox[2] - item.bbox[0],
-
-          height: item.bbox[3] - item.bbox[1],
-
-          label: item.label.toUpperCase(),
-
-          confidence: (item.confidence * 100).toFixed(1),
-
-          type: "signal",
-        });
-      });
+      const mergedDetections = rawList.map((item) => ({
+        x: item.bbox[0],
+        y: item.bbox[1],
+        width: item.bbox[2] - item.bbox[0],
+        height: item.bbox[3] - item.bbox[1],
+        label: (item.label || "UNKNOWN").toUpperCase(),
+        confidence: ((item.confidence || 0) * 100).toFixed(1),
+        type: (item.label || "unknown").toLowerCase(),
+      }));
 
       setDetections(mergedDetections);
 
@@ -299,17 +256,24 @@ const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
 
       if (mergedDetections.length > 0) {
         setConfidence(mergedDetections[0].confidence);
-
         setSeverity("HIGH");
+      } else {
+        setConfidence(0);
+        setSeverity("LOW");
       }
 
+      setBackendStatus("ONLINE");
       setAiState("ACTIVE");
     } catch (err) {
       console.error(err);
       setBackendStatus("ERROR");
-      setAiState(`${err.name}: ${err.message}`); // ← shows in HUD on phone
+      setAiState(`${err.name}: ${err.message}`);
     }
   };
+
+  /* =========================================
+     CAPTURE IMAGE
+  ========================================= */
 
   const captureImage = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -601,8 +565,8 @@ const CameraCapture = ({ onImage, isOnline, aiEnabled = true }) => {
       </div>
 
       {/* =====================================
-    CAMERA VIEW
-====================================== */}
+          CAMERA VIEW
+      ====================================== */}
 
       <div
         style={{
