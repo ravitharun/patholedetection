@@ -25,9 +25,14 @@ def test_api(request):
 def detect_api(request):
 
     if request.method == "OPTIONS":
-        return Response(status=200)
+        response = Response()
 
-    # Lazy import for Render safety
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "*"
+
+        return response
+
     from .services import process_detection
 
     file = request.FILES.get('file')
